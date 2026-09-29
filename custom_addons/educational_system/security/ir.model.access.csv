@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_school_grade,access_school_grade,model_school_grade,base.group_user,1,1,1,1
+access_school_class,access_school_class,model_school_class,base.group_user,1,1,1,1
+access_school_student,access_school_student,model_school_student,base.group_user,1,1,1,1
+access_school_instructor,access_school_instructor,model_school_instructor,base.group_user,1,1,1,1
+access_exam_exam,access_exam_exam,model_exam_exam,base.group_user,1,1,1,1
+access_exam_question,access_exam_question,model_exam_question,base.group_user,1,1,1,1
+access_exam_session,access_exam_session,model_exam_session,base.group_user,1,1,1,1
+access_exam_answer,access_exam_answer,model_exam_answer,base.group_user,1,1,1,1
+access_ai_analysis,access_ai_analysis,model_ai_analysis,base.group_user,1,1,1,1
+access_education_dashboard,access_education_dashboard,model_education_dashboard,base.group_user,1,1,1,1
