@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== 1. DANH SÁCH PHÂN TÍCH AI (ai.analysis) ==================== -->
+    <record id="view_ai_analysis_list" model="ir.ui.view">
+        <field name="name">ai.analysis.list</field>
+        <field name="model">ai.analysis</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Kết Quả Phân Tích AI">
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="session_id"/>
+                <field name="analysis_date"/>
+                <field name="ai_model_version"/>
+                <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status in ('pending', 'processing')" decoration-danger="status == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ai_analysis_form" model="ir.ui.view">
+        <field name="name">ai.analysis.form</field>
+        <field name="model">ai.analysis</field>
+        <field name="arch" type="xml">
+            <form string="Báo Cáo Phân Tích AI">
+                <header>
+                    <button name="action_analyze_with_claude" string="Phân Tích Bằng AI" type="object" class="oe_highlight" invisible="status == 'completed'"/>
+                    <button name="action_retry_analysis" string="Phân Tích Lại" type="object" invisible="status != 'completed'"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Tiêu Đề Báo Cáo"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Phiên Thi">
+                            <field name="student_id"/>
+                            <field name="session_id"/>
+                        </group>
+                        <group string="Thông Số Mô Hình">
+                            <field name="ai_model_version"/>
+                            <field name="analysis_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Kết Quả Đánh Giá Năng Lực">
+                            <group string="Điểm Mạnh (Dạng toán học tốt)">
+                                <field name="strengths" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
+                            </group>
+                            <group string="Điểm Yếu (Cần lưu ý rèn luyện)">
+                                <field name="weaknesses" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
+                            </group>
+                        </page>
+                        <page string="Nhận Xét Sư Phạm &amp; Hướng Dẫn">
+                            <group string="Lời Nhận Xét Của Giáo Viên AI">
+                                <field name="feedback" nolabel="1" placeholder="Chưa có nhận xét..."/>
+                            </group>
+                            <group string="Lộ Trình Cải Thiện &amp; Bài Tập Đề Xuất">
+                                <field name="suggestions" nolabel="1" placeholder="Chưa có gợi ý..."/>
+                            </group>
+                        </page>
+                        <page string="Nhật Ký Lỗi &amp; Kỹ Thuật" invisible="not error_message">
+                            <group>
+                                <field name="error_message" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_ai_analysis_search" model="ir.ui.view">
+        <field name="name">ai.analysis.search</field>
+        <field name="model">ai.analysis</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Phân Tích AI">
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="session_id"/>
+                <filter string="Đã Hoàn Thành" name="filter_completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Chờ Xử Lý" name="filter_pending" domain="[('status', '=', 'pending')]"/>
+                <filter string="Có Lỗi" name="filter_failed" domain="[('status', '=', 'failed')]"/>
+                <group>
+                    <filter string="Học Sinh" name="group_student" domain="[]" context="{'group_by': 'student_id'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                    <filter string="Mô Hình AI" name="group_model" domain="[]" context="{'group_by': 'ai_model_version'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_ai_analysis" model="ir.actions.act_window">
+        <field name="name">Kết Quả Phân Tích AI</field>
+        <field name="res_model">ai.analysis</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_ai_analysis_list"/>
+        <field name="search_view_id" ref="view_ai_analysis_search"/>
+    </record>
+</odoo>

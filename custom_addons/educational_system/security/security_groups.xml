@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Phân quyền nhóm đặc quyền (Privilege) cho Odoo 19 -->
+    <record model="res.groups.privilege" id="res_groups_privilege_education">
+        <field name="name">Quản Lý Giáo Dục &amp; Thi Cử</field>
+        <field name="sequence">25</field>
+    </record>
+
+    <!-- 1. Nhóm Học Sinh / Phụ Huynh -->
+    <record id="group_school_student" model="res.groups">
+        <field name="name">Học Sinh</field>
+        <field name="privilege_id" ref="res_groups_privilege_education"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- 2. Nhóm Giáo Viên / Trợ Giảng -->
+    <record id="group_school_teacher" model="res.groups">
+        <field name="name">Giáo Viên / Trợ Giảng</field>
+        <field name="privilege_id" ref="res_groups_privilege_education"/>
+        <field name="implied_ids" eval="[(4, ref('group_school_student'))]"/>
+    </record>
+
+    <!-- 3. Nhóm Quản Trị Viên / Ban Giám Hiệu -->
+    <record id="group_school_manager" model="res.groups">
+        <field name="name">Quản Trị Viên Giáo Dục</field>
+        <field name="privilege_id" ref="res_groups_privilege_education"/>
+        <field name="implied_ids" eval="[(4, ref('group_school_teacher'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>
