@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== MENU CHÍNH ==================== -->
+    <menuitem id="menu_education_root" 
+              name="Quản Lý Đào Tạo &amp; Thi Cử Toán 3" 
+              sequence="10" 
+              web_icon="educational_system,static/description/icon.png"/>
+
+    <!-- 1. PHÂN HỆ CƠ CẤU TRƯỜNG & LỚP -->
+    <menuitem id="menu_school_management" 
+              name="Tổ Chức Lớp Học" 
+              parent="menu_education_root" 
+              sequence="10"/>
+
+    <menuitem id="menu_school_grade" 
+              name="Khối Lớp" 
+              parent="menu_school_management" 
+              action="action_school_grade" 
+              sequence="1"
+              groups="group_school_teacher,group_school_manager"/>
+
+    <menuitem id="menu_school_class" 
+              name="Lớp Học" 
+              parent="menu_school_management" 
+              action="action_school_class" 
+              sequence="2"/>
+
+    <menuitem id="menu_school_instructor" 
+              name="Giáo Viên" 
+              parent="menu_school_management" 
+              action="action_school_instructor" 
+              sequence="3"
+              groups="group_school_teacher,group_school_manager"/>
+
+    <menuitem id="menu_school_student" 
+              name="Học Sinh" 
+              parent="menu_school_management" 
+              action="action_school_student" 
+              sequence="4"/>
+
+    <!-- 2. PHÂN HỆ THI CỬ & ĐỀ THI -->
+    <menuitem id="menu_exam_management" 
+              name="Thi Cử &amp; Đề Thi" 
+              parent="menu_education_root" 
+              sequence="20"/>
+
+    <menuitem id="menu_exam_question" 
+              name="Ngân Hàng Câu Hỏi" 
+              parent="menu_exam_management" 
+              action="action_exam_question" 
+              sequence="1"
+              groups="group_school_teacher,group_school_manager"/>
+
+    <menuitem id="menu_exam_exam" 
+              name="Đề Thi Toán 3" 
+              parent="menu_exam_management" 
+              action="action_exam_exam" 
+              sequence="2"/>
+
+    <menuitem id="menu_exam_session" 
+              name="Lượt Làm Bài" 
+              parent="menu_exam_management" 
+              action="action_exam_session" 
+              sequence="3"/>
+
+    <!-- 3. PHÂN HỆ TRÍ TUỆ NHÂN TẠO AI -->
+    <menuitem id="menu_ai_management" 
+              name="Phân Tích AI" 
+              parent="menu_education_root" 
+              sequence="30"/>
+
+    <menuitem id="menu_ai_analysis" 
+              name="Báo Cáo Tiến Bộ &amp; Phân Tích AI" 
+              parent="menu_ai_management" 
+              action="action_ai_analysis" 
+              sequence="1"/>
+</odoo>

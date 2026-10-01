@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== 1. NGÂN HÀNG CÂU HỎI (exam.question) ==================== -->
+    <record id="view_exam_question_list" model="ir.ui.view">
+        <field name="name">exam.question.list</field>
+        <field name="model">exam.question</field>
+        <field name="arch" type="xml">
+            <list string="Ngân Hàng Câu Hỏi Toán 3">
+                <field name="code"/>
+                <field name="content"/>
+                <field name="question_type"/>
+                <field name="topic"/>
+                <field name="difficulty" widget="badge" decoration-success="difficulty == 'Easy'" decoration-warning="difficulty == 'Medium'" decoration-danger="difficulty == 'Hard'"/>
+                <field name="correct_answer"/>
+                <field name="points"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_exam_question_form" model="ir.ui.view">
+        <field name="name">exam.question.form</field>
+        <field name="model">exam.question</field>
+        <field name="arch" type="xml">
+            <form string="Câu Hỏi Toán Lớp 3">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="code" string="Mã Câu Hỏi"/>
+                        <h1><field name="code" placeholder="CH-T3-001"/></h1>
+                    </div>
+                    <group>
+                        <group string="Phân Loại &amp; Thang Điểm">
+                            <field name="topic"/>
+                            <field name="difficulty"/>
+                            <field name="question_type"/>
+                            <field name="points"/>
+                        </group>
+                        <group string="Cấu Hình Đáp Án">
+                            <field name="correct_answer" placeholder="Ví dụ: 15 hoặc A"/>
+                            <field name="acceptable_answers" placeholder="Ví dụ: 15 quả|15 quả táo (ngăn cách bởi dấu | hoặc ;)"/>
+                            <field name="tolerance" invisible="question_type != 'numeric'"/>
+                        </group>
+                    </group>
+                    <group string="Nội Dung Câu Hỏi">
+                        <field name="content" nolabel="1" placeholder="Nhập đề bài câu hỏi tại đây..."/>
+                    </group>
+                    <group string="Hướng Dẫn Giải / Đáp Án Chi Tiết">
+                        <field name="explanation" nolabel="1" placeholder="Nhập lời giải thích mẫu hoặc phương pháp giải..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_exam_question_search" model="ir.ui.view">
+        <field name="name">exam.question.search</field>
+        <field name="model">exam.question</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Câu Hỏi">
+                <field name="code"/>
+                <field name="content"/>
+                <field name="correct_answer"/>
+                <filter string="Phép Cộng" name="filter_add" domain="[('topic', '=', 'Addition')]"/>
+                <filter string="Phép Trừ" name="filter_sub" domain="[('topic', '=', 'Subtraction')]"/>
+                <filter string="Phép Nhân" name="filter_mul" domain="[('topic', '=', 'Multiplication')]"/>
+                <filter string="Phép Chia" name="filter_div" domain="[('topic', '=', 'Division')]"/>
+                <filter string="Hình Học" name="filter_geo" domain="[('topic', '=', 'Geometry')]"/>
+                <filter string="Toán Lời Văn" name="filter_word" domain="[('topic', '=', 'WordProblem')]"/>
+                <separator/>
+                <filter string="Mức Độ Dễ" name="filter_easy" domain="[('difficulty', '=', 'Easy')]"/>
+                <filter string="Mức Độ Khó" name="filter_hard" domain="[('difficulty', '=', 'Hard')]"/>
+                <group>
+                    <filter string="Chủ Đề" name="group_topic" domain="[]" context="{'group_by': 'topic'}"/>
+                    <filter string="Độ Khó" name="group_difficulty" domain="[]" context="{'group_by': 'difficulty'}"/>
+                    <filter string="Dạng Câu Hỏi" name="group_qtype" domain="[]" context="{'group_by': 'question_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_exam_question" model="ir.actions.act_window">
+        <field name="name">Ngân Hàng Câu Hỏi</field>
+        <field name="res_model">exam.question</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_exam_question_search"/>
+    </record>
+
+    <!-- ==================== 2. ĐỀ THI (exam.exam) ==================== -->
+    <record id="view_exam_exam_list" model="ir.ui.view">
+        <field name="name">exam.exam.list</field>
+        <field name="model">exam.exam</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Đề Thi">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="exam_type"/>
+                <field name="topic"/>
+                <field name="total_questions"/>
+                <field name="total_score"/>
+                <field name="time_limit_minutes"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-info="status == 'draft'" decoration-muted="status == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_exam_exam_form" model="ir.ui.view">
+        <field name="name">exam.exam.form</field>
+        <field name="model">exam.exam</field>
+        <field name="arch" type="xml">
+            <form string="Đề Thi">
+                <header>
+                    <button name="action_open_assign_wizard" string="Gán Đề Cho Lớp / Học Sinh" type="object" class="oe_highlight" invisible="status != 'active'"/>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Tên Đề Thi"/>
+                        <h1><field name="name" placeholder="Ví dụ: Đề Kiểm Tra Giữa Kỳ I - Toán 3"/></h1>
+                    </div>
+                    <group>
+                        <group string="Cấu Hình Đề Thi">
+                            <field name="code" placeholder="DE-T3-GK1"/>
+                            <field name="exam_type"/>
+                            <field name="topic"/>
+                            <field name="auto_analyze"/>
+                        </group>
+                        <group string="Thang Điểm &amp; Thời Gian">
+                            <field name="total_score"/>
+                            <field name="time_limit_minutes"/>
+                            <field name="total_questions"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Ngân Hàng Câu Hỏi Trong Đề">
+                            <field name="question_ids">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="content"/>
+                                    <field name="topic"/>
+                                    <field name="difficulty"/>
+                                    <field name="points"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Lịch Sử Làm Bài Của Học Sinh">
+                            <field name="session_ids" readonly="1">
+                                <list>
+                                    <field name="student_id"/>
+                                    <field name="class_id"/>
+                                    <field name="total_score"/>
+                                    <field name="percentage" widget="progressbar"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_exam_exam_search" model="ir.ui.view">
+        <field name="name">exam.exam.search</field>
+        <field name="model">exam.exam</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Đề Thi">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="topic"/>
+                <filter string="Đang Hoạt Động" name="filter_active" domain="[('status', '=', 'active')]"/>
+                <group>
+                    <filter string="Loại Đề Thi" name="group_type" domain="[]" context="{'group_by': 'exam_type'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_exam_exam" model="ir.actions.act_window">
+        <field name="name">Đề Thi Toán 3</field>
+        <field name="res_model">exam.exam</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_exam_exam_search"/>
+    </record>
+
+    <!-- ==================== 3. LƯỢT LÀM BÀI (exam.session) ==================== -->
+    <record id="view_exam_session_list" model="ir.ui.view">
+        <field name="name">exam.session.list</field>
+        <field name="model">exam.session</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Lượt Làm Bài">
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="exam_id"/>
+                <field name="class_id"/>
+                <field name="total_score" widget="float"/>
+                <field name="total_possible" widget="float"/>
+                <field name="percentage" widget="progressbar"/>
+                <field name="correct_count"/>
+                <field name="wrong_count"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_exam_session_form" model="ir.ui.view">
+        <field name="name">exam.session.form</field>
+        <field name="model">exam.session</field>
+        <field name="arch" type="xml">
+            <form string="Lượt Làm Bài Của Học Sinh">
+                <header>
+                    <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="oe_highlight btn-success" invisible="status != 'NotStarted'"/>
+                    <button name="action_submit_exam" string="Nộp Bài &amp; Tự Động Chấm Điểm" type="object" class="oe_highlight btn-primary" invisible="status != 'InProgress'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="NotStarted,InProgress,Graded"/>
+                </header>
+                <sheet>
+                    <!-- Banner 1: Chưa bắt đầu -->
+                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'NotStarted'">
+                        <div>
+                            <i class="fa fa-info-circle fa-2x me-2 align-middle text-primary"/>
+                            <span class="fs-5 align-middle">Thời gian làm bài: <strong><field name="time_limit_minutes" readonly="1"/> phút</strong>. Vui lòng bấm <strong>"Bắt Đầu Làm Bài"</strong> để tính giờ và làm bài.</span>
+                        </div>
+                        <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="btn btn-success btn-lg ms-3"/>
+                    </div>
+
+                    <!-- Banner 2: Đang làm bài kèm đồng hồ đếm ngược -->
+                    <div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'InProgress'">
+                        <div>
+                            <i class="fa fa-pencil-square-o fa-2x me-2 align-middle text-warning"/>
+                            <span class="fs-5 align-middle fw-semibold">Đang trong thời gian làm bài thi. Hãy tập trung trả lời các câu hỏi bên dưới!</span>
+                        </div>
+                        <div>
+                            <field name="deadline" widget="exam_countdown_timer" readonly="1"/>
+                        </div>
+                    </div>
+
+                    <!-- Banner 3: Đã hoàn thành -->
+                    <div class="alert alert-success d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'Graded'">
+                        <div>
+                            <i class="fa fa-check-circle fa-2x me-2 align-middle text-success"/>
+                            <span class="fs-5 align-middle fw-semibold">Bài thi đã hoàn thành và chấm điểm! Điểm số: <strong><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/> (<field name="percentage" readonly="1"/>%)</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" string="Mã Phiên Thi"/>
+                        <h1><field name="name" readonly="1" placeholder="Tự động sinh khi chọn học sinh và đề thi..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Học Sinh &amp; Đề Thi">
+                            <field name="student_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                            <field name="exam_id" domain="[('status', '=', 'active')]" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                            <field name="class_id" readonly="1"/>
+                            <field name="time_limit_minutes" readonly="1"/>
+                            <field name="auto_analyze"/>
+                        </group>
+                        <group string="Thời Gian &amp; Kết Quả">
+                            <field name="start_time" readonly="1"/>
+                            <field name="deadline" readonly="1"/>
+                            <field name="end_time" readonly="1"/>
+                            <field name="total_possible" readonly="1"/>
+                            <field name="total_score" readonly="1" invisible="status != 'Graded'"/>
+                            <field name="percentage" widget="progressbar" invisible="status != 'Graded'"/>
+                            <field name="correct_count" readonly="1" invisible="status != 'Graded'"/>
+                            <field name="wrong_count" readonly="1" invisible="status != 'Graded'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bộ Câu Hỏi &amp; Bài Làm">
+                            <!-- Khóa create="0" delete="0": Học sinh không tự ý thêm bớt câu hỏi mà làm đúng các câu hỏi của đề thi -->
+                            <!-- readonly="status in ('NotStarted', 'Submitted', 'Graded')": Chỉ mở khi đang trong giờ làm bài -->
+                            <field name="answer_ids" readonly="status in ('NotStarted', 'Submitted', 'Graded')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="question_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                    <field name="question_content" string="Nội Dung Câu Hỏi" readonly="1"/>
+                                    <field name="question_type" string="Dạng Câu" readonly="1"/>
+                                    <field name="question_points" string="Thang Điểm" readonly="1"/>
+                                    <field name="answer_given" placeholder="Nhập đáp án tại đây..."/>
+                                    <field name="is_correct" widget="boolean_toggle" readonly="1" column_invisible="parent.status != 'Graded'"/>
+                                    <field name="points_earned" string="Điểm Đạt" readonly="1" column_invisible="parent.status != 'Graded'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Kết Quả Phân Tích AI" invisible="status != 'Graded'">
+                            <field name="analysis_ids" readonly="1">
+                                <list>
+                                    <field name="analysis_date"/>
+                                    <field name="ai_model_version"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status == 'pending'" decoration-danger="status == 'failed'"/>
+                                    <field name="feedback"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_exam_session_search" model="ir.ui.view">
+        <field name="name">exam.session.search</field>
+        <field name="model">exam.session</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Lượt Thi">
+                <field name="student_id"/>
+                <field name="exam_id"/>
+                <field name="class_id"/>
+                <filter string="Đang Làm Bài" name="filter_in_progress" domain="[('status', '=', 'InProgress')]"/>
+                <filter string="Đã Chấm Điểm" name="filter_graded" domain="[('status', '=', 'Graded')]"/>
+                <group>
+                    <filter string="Đề Thi" name="group_exam" domain="[]" context="{'group_by': 'exam_id'}"/>
+                    <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
+                    <filter string="Học Sinh" name="group_student" domain="[]" context="{'group_by': 'student_id'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_exam_session" model="ir.actions.act_window">
+        <field name="name">Lượt Làm Bài</field>
+        <field name="res_model">exam.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_exam_session_list"/>
+        <field name="search_view_id" ref="view_exam_session_search"/>
+    </record>
+
+    <!-- ==================== 4. WIZARD GÁN ĐỀ THI (exam.assign.wizard) ==================== -->
+    <record id="view_exam_assign_wizard_form" model="ir.ui.view">
+        <field name="name">exam.assign.wizard.form</field>
+        <field name="model">exam.assign.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Gán Đề Thi Cho Học Sinh">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Gán Đề Thi Cho Học Sinh / Lớp</h2>
+                    </div>
+                    <group>
+                        <field name="exam_id" readonly="1" options="{'no_open': True}"/>
+                        <field name="assign_type" widget="radio"/>
+                        <field name="class_id" invisible="assign_type != 'class'" required="assign_type == 'class'" placeholder="Chọn lớp nhận đề thi..."/>
+                        <field name="student_ids" widget="many2many_tags" invisible="assign_type != 'students'" required="assign_type == 'students'" placeholder="Chọn danh sách học sinh..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_assign_exam" string="Phát Đề Cho Học Sinh" type="object" class="oe_highlight"/>
+                    <button string="Hủy Bỏ" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

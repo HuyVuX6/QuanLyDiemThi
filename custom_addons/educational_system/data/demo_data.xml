@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- ==================== 1. KHỐI LỚP ==================== -->
+        <record id="demo_grade_3" model="school.grade">
+            <field name="code">KHOI_3</field>
+            <field name="name">Khối Lớp 3</field>
+            <field name="description">Chương trình giáo dục Toán Tiểu học lớp 3 theo chuẩn GDPT 2018</field>
+            <field name="status">active</field>
+        </record>
+
+        <!-- ==================== 2. GIÁO VIÊN ==================== -->
+        <record id="demo_instructor_an" model="school.instructor">
+            <field name="code">GV001</field>
+            <field name="name">Nguyễn Văn An</field>
+            <field name="specialization">Toán tiểu học &amp; Bồi dưỡng HSG</field>
+            <field name="phone">0912345678</field>
+            <field name="email">an.nguyen@school.edu.vn</field>
+            <field name="status">Active</field>
+        </record>
+
+        <record id="demo_instructor_mai" model="school.instructor">
+            <field name="code">GV002</field>
+            <field name="name">Trần Thị Mai</field>
+            <field name="specialization">Sư phạm Toán tiểu học</field>
+            <field name="phone">0987654321</field>
+            <field name="email">mai.tran@school.edu.vn</field>
+            <field name="status">Active</field>
+        </record>
+
+        <!-- ==================== 3. LỚP HỌC ==================== -->
+        <record id="demo_class_3a1" model="school.class">
+            <field name="code">3A1</field>
+            <field name="name">Lớp 3A1</field>
+            <field name="grade_id" ref="demo_grade_3"/>
+            <field name="teacher_id" ref="demo_instructor_an"/>
+            <field name="max_students">35</field>
+            <field name="start_date">2026-09-05</field>
+            <field name="end_date">2027-05-30</field>
+            <field name="status">active</field>
+        </record>
+
+        <record id="demo_class_3a2" model="school.class">
+            <field name="code">3A2</field>
+            <field name="name">Lớp 3A2</field>
+            <field name="grade_id" ref="demo_grade_3"/>
+            <field name="teacher_id" ref="demo_instructor_mai"/>
+            <field name="max_students">35</field>
+            <field name="start_date">2026-09-05</field>
+            <field name="end_date">2027-05-30</field>
+            <field name="status">active</field>
+        </record>
+
+        <!-- ==================== 4. HỌC SINH ==================== -->
+        <record id="demo_student_anh" model="school.student">
+            <field name="code">HS001</field>
+            <field name="name">Nguyễn Minh Anh</field>
+            <field name="class_id" ref="demo_class_3a1"/>
+            <field name="gender">F</field>
+            <field name="date_of_birth">2017-03-15</field>
+            <field name="parent_phone">0903111222</field>
+            <field name="email">minhanh.hs@school.edu.vn</field>
+            <field name="status">Active</field>
+        </record>
+
+        <record id="demo_student_bao" model="school.student">
+            <field name="code">HS002</field>
+            <field name="name">Trần Quốc Bảo</field>
+            <field name="class_id" ref="demo_class_3a1"/>
+            <field name="gender">M</field>
+            <field name="date_of_birth">2017-06-20</field>
+            <field name="parent_phone">0903222333</field>
+            <field name="status">Active</field>
+        </record>
+
+        <record id="demo_student_dung" model="school.student">
+            <field name="code">HS003</field>
+            <field name="name">Lê Hoàng Dũng</field>
+            <field name="class_id" ref="demo_class_3a1"/>
+            <field name="gender">M</field>
+            <field name="date_of_birth">2017-09-10</field>
+            <field name="parent_phone">0903333444</field>
+            <field name="status">Active</field>
+        </record>
+
+        <record id="demo_student_linh" model="school.student">
+            <field name="code">HS004</field>
+            <field name="name">Phạm Thảo Linh</field>
+            <field name="class_id" ref="demo_class_3a2"/>
+            <field name="gender">F</field>
+            <field name="date_of_birth">2017-01-25</field>
+            <field name="parent_phone">0903444555</field>
+            <field name="status">Active</field>
+        </record>
+
+        <record id="demo_student_huy" model="school.student">
+            <field name="code">HS005</field>
+            <field name="name">Vũ Gia Huy</field>
+            <field name="class_id" ref="demo_class_3a2"/>
+            <field name="gender">M</field>
+            <field name="date_of_birth">2017-11-05</field>
+            <field name="parent_phone">0903555666</field>
+            <field name="status">Active</field>
+        </record>
+
+        <!-- ==================== 5. NGÂN HÀNG CÂU HỎI ==================== -->
+        <record id="demo_q1" model="exam.question">
+            <field name="code">CH-T3-01</field>
+            <field name="content">Tính: 345 + 218 = ?</field>
+            <field name="topic">Addition</field>
+            <field name="difficulty">Easy</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">563</field>
+            <field name="points">1.0</field>
+            <field name="explanation">Đặt tính rồi tính: 5 + 8 = 13 viết 3 nhớ 1; 4 + 1 = 5 thêm 1 = 6; 3 + 2 = 5. Kết quả là 563.</field>
+        </record>
+
+        <record id="demo_q2" model="exam.question">
+            <field name="code">CH-T3-02</field>
+            <field name="content">Tính: 782 - 349 = ?</field>
+            <field name="topic">Subtraction</field>
+            <field name="difficulty">Easy</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">433</field>
+            <field name="points">1.0</field>
+            <field name="explanation">2 không trừ được 9, mượn 1 chục: 12 - 9 = 3; 8 - 4 - 1 = 3; 7 - 3 = 4. Kết quả là 433.</field>
+        </record>
+
+        <record id="demo_q3" model="exam.question">
+            <field name="code">CH-T3-03</field>
+            <field name="content">Tính nhẩm: 6 x 8 = ?</field>
+            <field name="topic">Multiplication</field>
+            <field name="difficulty">Easy</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">48</field>
+            <field name="points">1.0</field>
+            <field name="explanation">Theo bảng nhân 6: 6 x 8 = 48.</field>
+        </record>
+
+        <record id="demo_q4" model="exam.question">
+            <field name="code">CH-T3-04</field>
+            <field name="content">Tính: 72 : 9 = ?</field>
+            <field name="topic">Division</field>
+            <field name="difficulty">Easy</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">8</field>
+            <field name="points">1.0</field>
+            <field name="explanation">Theo bảng chia 9: 72 : 9 = 8 vì 9 x 8 = 72.</field>
+        </record>
+
+        <record id="demo_q5" model="exam.question">
+            <field name="code">CH-T3-05</field>
+            <field name="content">Một hình chữ nhật có chiều dài 8cm, chiều rộng 5cm. Chu vi của hình chữ nhật đó là bao nhiêu xăng-ti-mét?</field>
+            <field name="topic">Geometry</field>
+            <field name="difficulty">Medium</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">26</field>
+            <field name="acceptable_answers">26|26 cm|26cm</field>
+            <field name="points">2.0</field>
+            <field name="explanation">Chu vi hình chữ nhật = (Chiều dài + Chiều rộng) x 2 = (8 + 5) x 2 = 13 x 2 = 26 (cm).</field>
+        </record>
+
+        <record id="demo_q6" model="exam.question">
+            <field name="code">CH-T3-06</field>
+            <field name="content">Một hình vuông có cạnh dài 6cm. Diện tích của hình vuông đó là bao nhiêu xăng-ti-mét vuông?</field>
+            <field name="topic">Geometry</field>
+            <field name="difficulty">Medium</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">36</field>
+            <field name="acceptable_answers">36|36 cm2|36cm2</field>
+            <field name="points">2.0</field>
+            <field name="explanation">Diện tích hình vuông = Cạnh x Cạnh = 6 x 6 = 36 (cm2).</field>
+        </record>
+
+        <record id="demo_q7" model="exam.question">
+            <field name="code">CH-T3-07</field>
+            <field name="content">Mẹ mua 5 hộp bánh, mỗi hộp có 6 cái bánh. Hỏi mẹ đã mua tất cả bao nhiêu cái bánh?</field>
+            <field name="topic">WordProblem</field>
+            <field name="difficulty">Medium</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">30</field>
+            <field name="acceptable_answers">30|30 cái|30 cái bánh</field>
+            <field name="points">1.0</field>
+            <field name="explanation">Số bánh mẹ mua là: 6 x 5 = 30 (cái bánh).</field>
+        </record>
+
+        <record id="demo_q8" model="exam.question">
+            <field name="code">CH-T3-08</field>
+            <field name="content">Có 45 bông hoa cắm đều vào 5 lọ hoa. Hỏi mỗi lọ có bao nhiêu bông hoa?</field>
+            <field name="topic">WordProblem</field>
+            <field name="difficulty">Easy</field>
+            <field name="question_type">numeric</field>
+            <field name="correct_answer">9</field>
+            <field name="acceptable_answers">9|9 bông|9 bông hoa</field>
+            <field name="points">1.0</field>
+            <field name="explanation">Mỗi lọ có số bông hoa là: 45 : 5 = 9 (bông hoa).</field>
+        </record>
+
+        <!-- ==================== 6. ĐỀ THI ==================== -->
+        <record id="demo_exam_gk1" model="exam.exam">
+            <field name="code">DE-T3-GK1</field>
+            <field name="name">Đề Kiểm Tra Giữa Học Kỳ I - Môn Toán Lớp 3</field>
+            <field name="exam_type">MidTerm</field>
+            <field name="topic">Cộng, trừ, nhân, chia và hình học cơ bản</field>
+            <field name="total_score">10.0</field>
+            <field name="time_limit_minutes">35</field>
+            <field name="status">active</field>
+            <field name="auto_analyze" eval="True"/>
+            <field name="question_ids" eval="[(6, 0, [ref('demo_q1'), ref('demo_q2'), ref('demo_q3'), ref('demo_q4'), ref('demo_q5'), ref('demo_q6'), ref('demo_q7')])]"/>
+        </record>
+
+        <record id="demo_exam_15p" model="exam.exam">
+            <field name="code">DE-T3-15P</field>
+            <field name="name">Kiểm Tra 15 Phút: Bảng Nhân Chia &amp; Toán Có Lời Văn</field>
+            <field name="exam_type">QuickTest</field>
+            <field name="topic">Ôn luyện phép nhân chia</field>
+            <field name="total_score">10.0</field>
+            <field name="time_limit_minutes">15</field>
+            <field name="status">active</field>
+            <field name="auto_analyze" eval="True"/>
+            <field name="question_ids" eval="[(6, 0, [ref('demo_q3'), ref('demo_q4'), ref('demo_q7'), ref('demo_q8')])]"/>
+        </record>
+
+        <!-- ==================== 7. LƯỢT LÀM BÀI (exam.session) ==================== -->
+        <!-- Lượt 1: Học sinh Minh Anh - Đề Giữa Kỳ (Điểm: 10/10) -->
+        <record id="demo_session_anh" model="exam.session">
+            <field name="student_id" ref="demo_student_anh"/>
+            <field name="exam_id" ref="demo_exam_gk1"/>
+            <field name="class_id" ref="demo_class_3a1"/>
+            <field name="start_time">2026-10-01 08:00:00</field>
+            <field name="end_time">2026-10-01 08:28:00</field>
+            <field name="status">Graded</field>
+            <field name="auto_analyze" eval="False"/>
+        </record>
+
+        <!-- Đáp án lượt 1 -->
+        <record id="demo_ans_anh_1" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q1"/>
+            <field name="answer_given">563</field>
+        </record>
+        <record id="demo_ans_anh_2" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q2"/>
+            <field name="answer_given">433</field>
+        </record>
+        <record id="demo_ans_anh_3" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q3"/>
+            <field name="answer_given">48</field>
+        </record>
+        <record id="demo_ans_anh_4" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q4"/>
+            <field name="answer_given">8</field>
+        </record>
+        <record id="demo_ans_anh_5" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q5"/>
+            <field name="answer_given">26 cm</field>
+        </record>
+        <record id="demo_ans_anh_6" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q6"/>
+            <field name="answer_given">36</field>
+        </record>
+        <record id="demo_ans_anh_7" model="exam.answer">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="question_id" ref="demo_q7"/>
+            <field name="answer_given">30 cái bánh</field>
+        </record>
+
+        <!-- Lượt 2: Học sinh Quốc Bảo - Đề Giữa Kỳ (Điểm: 7.0/10) -->
+        <record id="demo_session_bao" model="exam.session">
+            <field name="student_id" ref="demo_student_bao"/>
+            <field name="exam_id" ref="demo_exam_gk1"/>
+            <field name="class_id" ref="demo_class_3a1"/>
+            <field name="start_time">2026-10-01 08:00:00</field>
+            <field name="end_time">2026-10-01 08:32:00</field>
+            <field name="status">Graded</field>
+            <field name="auto_analyze" eval="False"/>
+        </record>
+
+        <!-- Đáp án lượt 2 (sai câu lời văn và chu vi) -->
+        <record id="demo_ans_bao_1" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q1"/>
+            <field name="answer_given">563</field>
+        </record>
+        <record id="demo_ans_bao_2" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q2"/>
+            <field name="answer_given">433</field>
+        </record>
+        <record id="demo_ans_bao_3" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q3"/>
+            <field name="answer_given">48</field>
+        </record>
+        <record id="demo_ans_bao_4" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q4"/>
+            <field name="answer_given">8</field>
+        </record>
+        <record id="demo_ans_bao_5" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q5"/>
+            <field name="answer_given">13</field> <!-- Quên nhân 2 chu vi -->
+        </record>
+        <record id="demo_ans_bao_6" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q6"/>
+            <field name="answer_given">36</field>
+        </record>
+        <record id="demo_ans_bao_7" model="exam.answer">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="question_id" ref="demo_q7"/>
+            <field name="answer_given">35</field> <!-- Sai phép nhân lời văn -->
+        </record>
+
+        <!-- Lượt 3: Học sinh Thảo Linh - Đề 15 Phút (Điểm: 10/10) -->
+        <record id="demo_session_linh" model="exam.session">
+            <field name="student_id" ref="demo_student_linh"/>
+            <field name="exam_id" ref="demo_exam_15p"/>
+            <field name="class_id" ref="demo_class_3a2"/>
+            <field name="start_time">2026-10-01 09:00:00</field>
+            <field name="end_time">2026-10-01 09:12:00</field>
+            <field name="status">Graded</field>
+            <field name="auto_analyze" eval="False"/>
+        </record>
+
+        <!-- Đáp án lượt 3 -->
+        <record id="demo_ans_linh_1" model="exam.answer">
+            <field name="session_id" ref="demo_session_linh"/>
+            <field name="question_id" ref="demo_q3"/>
+            <field name="answer_given">48</field>
+        </record>
+        <record id="demo_ans_linh_2" model="exam.answer">
+            <field name="session_id" ref="demo_session_linh"/>
+            <field name="question_id" ref="demo_q4"/>
+            <field name="answer_given">8</field>
+        </record>
+        <record id="demo_ans_linh_3" model="exam.answer">
+            <field name="session_id" ref="demo_session_linh"/>
+            <field name="question_id" ref="demo_q7"/>
+            <field name="answer_given">30</field>
+        </record>
+        <record id="demo_ans_linh_4" model="exam.answer">
+            <field name="session_id" ref="demo_session_linh"/>
+            <field name="question_id" ref="demo_q8"/>
+            <field name="answer_given">9 bông hoa</field>
+        </record>
+
+        <!-- ==================== 8. PHÂN TÍCH AI (ai.analysis) ==================== -->
+        <record id="demo_ai_anh" model="ai.analysis">
+            <field name="session_id" ref="demo_session_anh"/>
+            <field name="student_id" ref="demo_student_anh"/>
+            <field name="status">completed</field>
+            <field name="analysis_date">2026-10-01 08:30:00</field>
+            <field name="ai_model_version">claude-3-5-sonnet-20241022</field>
+            <field name="strengths">• Thành thạo xuất sắc cả 4 phép tính cơ bản (cộng, trừ, nhân, chia).
+• Nắm vững công thức tính chu vi hình chữ nhật và diện tích hình vuông.
+• Khả năng đọc hiểu bài toán có lời văn rất tốt, biết diễn đạt đơn vị đi kèm chính xác.</field>
+            <field name="weaknesses">• Không phát hiện lỗi sai kiến thức trong bài thi này.
+• Nên chú ý trình bày các bước chi tiết hơn đối với bài toán tự luận nhiều bước.</field>
+            <field name="feedback">Em Minh Anh hoàn thành bài thi một cách xuất sắc với số điểm tuyệt đối 10/10. Tư duy toán học mạch lạc và cẩn thận trong từng phép tính. Rất đáng khen ngợi!</field>
+            <field name="suggestions">1. Tiếp tục duy trì phong độ và thử sức với các bài toán nâng cao về dạng toán tính nhanh.
+2. Làm quen với các bài toán suy luận logic và bài toán giải bằng hai phép tính.</field>
+        </record>
+
+        <record id="demo_ai_bao" model="ai.analysis">
+            <field name="session_id" ref="demo_session_bao"/>
+            <field name="student_id" ref="demo_student_bao"/>
+            <field name="status">completed</field>
+            <field name="analysis_date">2026-10-01 08:35:00</field>
+            <field name="ai_model_version">claude-3-5-sonnet-20241022</field>
+            <field name="strengths">• Tính toán số học cơ bản (phép cộng 3 chữ số có nhớ, phép trừ có nhớ) chính xác.
+• Nắm tốt bảng cửu chương nhân 6 và chia 9.</field>
+            <field name="weaknesses">• Hình học: Nhầm lẫn công thức chu vi hình chữ nhật (mới chỉ cộng chiều dài và chiều rộng mà quên nhân 2).
+• Toán lời văn: Thực hiện phép tính nhân còn nhầm lẫn (6 x 5 lại tính thành 35).</field>
+            <field name="feedback">Em Quốc Bảo có nền tảng tính toán khá tốt nhưng còn một số điểm sơ suất ở dạng toán hình học và lời văn. Điểm số 7.0/10 là mức khá, em hoàn toàn có thể đạt điểm cao hơn nếu ôn kỹ công thức!</field>
+            <field name="suggestions">1. Ôn lại và ghi nhớ câu khẩu quyết: "Chu vi hình chữ nhật: Dài cộng rộng rồi nhân với 2".
+2. Ôn lại bảng cửu chương 5 và 6, làm thêm 5 bài tập toán lời văn đơn giản để rèn phản xạ.</field>
+        </record>
+
+        <record id="demo_ai_linh" model="ai.analysis">
+            <field name="session_id" ref="demo_session_linh"/>
+            <field name="student_id" ref="demo_student_linh"/>
+            <field name="status">completed</field>
+            <field name="analysis_date">2026-10-01 09:15:00</field>
+            <field name="ai_model_version">claude-3-5-sonnet-20241022</field>
+            <field name="strengths">• Phản xạ nhanh và chính xác với bảng nhân chia.
+• Trả lời đầy đủ kèm đơn vị cho bài toán có lời văn.</field>
+            <field name="weaknesses">• Hoàn thành bài sớm (12/15 phút), nên dành 3 phút cuối để soát lại đề.</field>
+            <field name="feedback">Bài làm 15 phút của Thảo Linh đạt kết quả trọn vẹn 10/10. Em nắm rất chắc kiến thức trọng tâm của tuần học.</field>
+            <field name="suggestions">Khuyến khích em tiếp tục chuẩn bị bài mới về các bảng nhân chia tiếp theo.</field>
+        </record>
+    </data>
+</odoo>

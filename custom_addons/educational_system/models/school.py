@@ -13,6 +13,10 @@ class SchoolGrade(models.Model):
     code = fields.Char(string='Mã Khối', required=True, size=20)
     name = fields.Char(string='Tên Khối', required=True, size=120)
     description = fields.Text(string='Mô Tả')
+    status = fields.Selection([
+        ('active', 'Đang Hoạt Động'),
+        ('inactive', 'Ngừng Hoạt Động')
+    ], string='Trạng Thái', default='active')
     class_ids = fields.One2many('school.class', 'grade_id', string='Các Lớp')
 
     def _compute_display_name(self):
@@ -32,12 +36,19 @@ class SchoolClass(models.Model):
 
     code = fields.Char(string='Mã Lớp', required=True, size=20)
     name = fields.Char(string='Tên Lớp', required=True, size=120)
+    start_date = fields.Date(string='Ngày Bắt Đầu')
+    end_date = fields.Date(string='Ngày Kết Thúc')
     max_students = fields.Integer(string='Sĩ Số Tối Đa', default=30)
     current_students = fields.Integer(
         string='Sĩ Số Hiện Tại',
         compute='_compute_current_students',
         store=True
     )
+    status = fields.Selection([
+        ('active', 'Đang Hoạt Động'),
+        ('inactive', 'Tạm Ngưng'),
+        ('completed', 'Đã Kết Thúc')
+    ], string='Trạng Thái', default='active')
     grade_id = fields.Many2one('school.grade', string='Khối Lớp', required=True, ondelete='cascade')
     teacher_id = fields.Many2one('school.instructor', string='Giáo Viên Chủ Nhiệm', ondelete='set null')
     student_ids = fields.One2many('school.student', 'class_id', string='Danh Sách Học Sinh')
@@ -46,6 +57,14 @@ class SchoolClass(models.Model):
     def _compute_current_students(self):
         for record in self:
             record.current_students = len(record.student_ids.filtered(lambda s: s.status == 'Active'))
+
+    @api.constrains('current_students', 'max_students')
+    def _check_max_students(self):
+        for record in self:
+            if record.max_students > 0 and record.current_students > record.max_students:
+                raise exceptions.ValidationError(
+                    f"Sĩ số hiện tại ({record.current_students}) vượt quá sĩ số tối đa ({record.max_students}) của lớp {record.name}!"
+                )
 
     def _compute_display_name(self):
         for record in self:
@@ -66,6 +85,8 @@ class SchoolStudent(models.Model):
     date_of_birth = fields.Date(string='Ngày Sinh')
     gender = fields.Selection([('M', 'Nam'), ('F', 'Nữ'), ('O', 'Khác')], string='Giới Tính', default='M')
     parent_phone = fields.Char(string='Điện Thoại Phụ Huynh', size=20)
+    email = fields.Char(string='Email')
+    user_id = fields.Many2one('res.users', string='Tài Khoản Liên Kết', ondelete='set null')
     status = fields.Selection([
         ('Active', 'Đang Học'),
         ('Inactive', 'Tạm Ngừng'),
@@ -91,7 +112,10 @@ class SchoolInstructor(models.Model):
     name = fields.Char(string='Tên Giáo Viên', required=True, size=120)
     specialization = fields.Char(string='Chuyên Môn', default='Toán tiểu học')
     phone = fields.Char(string='Số Điện Thoại')
+    email = fields.Char(string='Email')
+    user_id = fields.Many2one('res.users', string='Tài Khoản Liên Kết', ondelete='set null')
     status = fields.Selection([('Active', 'Đang Dạy'), ('Inactive', 'Nghỉ')], default='Active', string='Trạng Thái')
+    class_ids = fields.One2many('school.class', 'teacher_id', string='Lớp Chủ Nhiệm')
 
     def _compute_display_name(self):
         for record in self:

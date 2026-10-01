@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== 1. KHỐI LỚP (school.grade) ==================== -->
+    <record id="view_school_grade_list" model="ir.ui.view">
+        <field name="name">school.grade.list</field>
+        <field name="model">school.grade</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Khối Lớp">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-muted="status == 'inactive'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_school_grade_form" model="ir.ui.view">
+        <field name="name">school.grade.form</field>
+        <field name="model">school.grade</field>
+        <field name="arch" type="xml">
+            <form string="Khối Lớp">
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Tên Khối Lớp"/>
+                        <h1><field name="name" placeholder="Ví dụ: Khối Lớp 3"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="KHOI_3"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh Sách Các Lớp Trực Thuộc">
+                            <field name="class_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="teacher_id"/>
+                                    <field name="current_students"/>
+                                    <field name="max_students"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_school_grade" model="ir.actions.act_window">
+        <field name="name">Khối Lớp</field>
+        <field name="res_model">school.grade</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ==================== 2. LỚP HỌC (school.class) ==================== -->
+    <record id="view_school_class_list" model="ir.ui.view">
+        <field name="name">school.class.list</field>
+        <field name="model">school.class</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Lớp Học">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="grade_id"/>
+                <field name="teacher_id"/>
+                <field name="current_students"/>
+                <field name="max_students"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-info="status == 'completed'" decoration-muted="status == 'inactive'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_school_class_form" model="ir.ui.view">
+        <field name="name">school.class.form</field>
+        <field name="model">school.class</field>
+        <field name="arch" type="xml">
+            <form string="Lớp Học">
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Tên Lớp"/>
+                        <h1><field name="name" placeholder="Ví dụ: Lớp 3A1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Chung">
+                            <field name="code" placeholder="3A1"/>
+                            <field name="grade_id"/>
+                            <field name="teacher_id"/>
+                        </group>
+                        <group string="Sĩ Số &amp; Thời Gian">
+                            <field name="max_students"/>
+                            <field name="current_students"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh Sách Học Sinh Trong Lớp">
+                            <field name="student_ids">
+                                <list editable="bottom">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="gender"/>
+                                    <field name="date_of_birth"/>
+                                    <field name="parent_phone"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_school_class_search" model="ir.ui.view">
+        <field name="name">school.class.search</field>
+        <field name="model">school.class</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Lớp Học">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="grade_id"/>
+                <field name="teacher_id"/>
+                <filter string="Đang Hoạt Động" name="filter_active" domain="[('status', '=', 'active')]"/>
+                <group>
+                    <filter string="Khối Lớp" name="group_grade" domain="[]" context="{'group_by': 'grade_id'}"/>
+                    <filter string="Giáo Viên Chủ Nhiệm" name="group_teacher" domain="[]" context="{'group_by': 'teacher_id'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_school_class" model="ir.actions.act_window">
+        <field name="name">Lớp Học</field>
+        <field name="res_model">school.class</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_school_class_search"/>
+    </record>
+
+    <!-- ==================== 3. GIÁO VIÊN (school.instructor) ==================== -->
+    <record id="view_school_instructor_list" model="ir.ui.view">
+        <field name="name">school.instructor.list</field>
+        <field name="model">school.instructor</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Giáo Viên">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="specialization"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-muted="status == 'Inactive'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_school_instructor_form" model="ir.ui.view">
+        <field name="name">school.instructor.form</field>
+        <field name="model">school.instructor</field>
+        <field name="arch" type="xml">
+            <form string="Hồ Sơ Giáo Viên">
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Họ Và Tên Giáo Viên"/>
+                        <h1><field name="name" placeholder="Ví dụ: Nguyễn Văn An"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Định Danh">
+                            <field name="code" placeholder="GV001"/>
+                            <field name="specialization"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Liên Hệ">
+                            <field name="phone"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Các Lớp Phụ Trách / Chủ Nhiệm">
+                            <field name="class_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="grade_id"/>
+                                    <field name="current_students"/>
+                                    <field name="status"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_school_instructor_search" model="ir.ui.view">
+        <field name="name">school.instructor.search</field>
+        <field name="model">school.instructor</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Giáo Viên">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <filter string="Đang Dạy" name="filter_active" domain="[('status', '=', 'Active')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_school_instructor" model="ir.actions.act_window">
+        <field name="name">Giáo Viên</field>
+        <field name="res_model">school.instructor</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_school_instructor_search"/>
+    </record>
+
+    <!-- ==================== 4. HỌC SINH (school.student) ==================== -->
+    <record id="view_school_student_list" model="ir.ui.view">
+        <field name="name">school.student.list</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Học Sinh">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="class_id"/>
+                <field name="gender"/>
+                <field name="date_of_birth"/>
+                <field name="parent_phone"/>
+                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-warning="status == 'Inactive'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_school_student_form" model="ir.ui.view">
+        <field name="name">school.student.form</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <form string="Hồ Sơ Học Sinh">
+                <header>
+                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Họ Và Tên Học Sinh"/>
+                        <h1><field name="name" placeholder="Ví dụ: Trần Minh Đức"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Học Tập">
+                            <field name="code" placeholder="HS001"/>
+                            <field name="class_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Thông Tin Cá Nhân &amp; Gia Đình">
+                            <field name="date_of_birth"/>
+                            <field name="gender"/>
+                            <field name="parent_phone"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_school_student_search" model="ir.ui.view">
+        <field name="name">school.student.search</field>
+        <field name="model">school.student</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Học Sinh">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="class_id"/>
+                <field name="parent_phone"/>
+                <filter string="Đang Học" name="filter_active" domain="[('status', '=', 'Active')]"/>
+                <group>
+                    <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
+                    <filter string="Giới Tính" name="group_gender" domain="[]" context="{'group_by': 'gender'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_school_student" model="ir.actions.act_window">
+        <field name="name">Học Sinh</field>
+        <field name="res_model">school.student</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_school_student_search"/>
+    </record>
+</odoo>

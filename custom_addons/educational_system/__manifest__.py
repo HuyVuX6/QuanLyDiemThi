@@ -7,9 +7,21 @@
     'author': 'Vũ Ngọc Huy',
     'depends': ['base', 'web'],
     'data': [
+        'security/security_groups.xml',
         'security/ir.model.access.csv',
-        'views/views.xml',
+        'security/security_rules.xml',
+        'data/ir_cron_data.xml',
+        'views/school_views.xml',
+        'views/exam_views.xml',
+        'views/ai_analysis_views.xml',
+        'views/menuchinh_views.xml',
+        'data/demo_data.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'educational_system/static/src/js/exam_countdown_timer.js',
+        ],
+    },
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
