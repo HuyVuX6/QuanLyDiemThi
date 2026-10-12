@@ -1,11 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- ==================== WIZARD IMPORT CÂU HỎI TỪ EXCEL ==================== -->
+    <record id="view_exam_question_import_wizard_form" model="ir.ui.view">
+        <field name="name">exam.question.import.wizard.form</field>
+        <field name="model">exam.question.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Ngân Hàng Câu Hỏi Từ Excel">
+                <sheet>
+                    <field name="state" invisible="1"/>
+                    <div invisible="state != 'draft'">
+                        <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3" role="status">
+                            <div>
+                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-info-circle me-1" title="Hướng dẫn"/> Bộ Nguyên Tắc Import Câu Hỏi Toán Lớp 3:</h6>
+                                <ul class="mb-0 ps-3 small">
+                                    <li>Định dạng tệp: <strong>.xlsx</strong> hoặc <strong>.xls</strong>. Dòng 1 là tiêu đề cột, dữ liệu tính từ dòng 2.</li>
+                                    <li>Các cột bắt buộc (*): <strong>Mã Câu Hỏi, Nội Dung, Chủ Đề, Đáp Án Chuẩn</strong>.</li>
+                                    <li>Chủ đề hợp lệ: <em>Phép Cộng, Phép Trừ, Phép Nhân, Phép Chia, Hình Học, Toán Lời Văn</em>.</li>
+                                    <li>Dạng câu hỏi: <em>Điền số (mặc định), Trắc nghiệm (A, B, C, D), Tự luận ngắn</em>.</li>
+                                    <li>Độ khó: <em>Dễ, Trung Bình, Khó</em>. Điểm mặc định: <em>1.0</em>.</li>
+                                </ul>
+                            </div>
+                            <div class="ms-3">
+                                <a href="/educational_system/download_question_template" class="btn btn-outline-primary btn-sm text-nowrap fw-bold" role="button"><i class="fa fa-download me-1" title="Tải về"/> 📄 Tải File Excel Mẫu</a>
+                            </div>
+                        </div>
+
+                        <group>
+                            <group string="Tệp Dữ Liệu Excel">
+                                <field name="excel_file" filename="filename" widget="binary"/>
+                                <field name="filename" invisible="1"/>
+                            </group>
+                            <group string="Quy Tắc Xử Lý">
+                                <field name="duplicate_behavior"/>
+                                <field name="default_points"/>
+                            </group>
+                        </group>
+                    </div>
+
+                    <div invisible="state != 'done'">
+                        <field name="result_html" nolabel="1"/>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_import_excel" 
+                            string="🚀 Bắt Đầu Import Dữ Liệu" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="state != 'draft'"/>
+                    <button name="action_reset" 
+                            string="🔄 Import Tệp Khác" 
+                            type="object" 
+                            class="btn-secondary" 
+                            invisible="state != 'done'"/>
+                    <button name="action_view_questions" 
+                            string="📂 Xem Danh Sách Câu Hỏi" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="state != 'done'"/>
+                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_exam_question_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Câu Hỏi Từ Excel</field>
+        <field name="res_model">exam.question.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_exam_question"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+
     <!-- ==================== 1. NGÂN HÀNG CÂU HỎI (exam.question) ==================== -->
     <record id="view_exam_question_list" model="ir.ui.view">
         <field name="name">exam.question.list</field>
         <field name="model">exam.question</field>
         <field name="arch" type="xml">
             <list string="Ngân Hàng Câu Hỏi Toán 3">
+                <header>
+                    <button name="%(action_exam_question_import_wizard)d" 
+                            string="📥 Import Excel Câu Hỏi" 
+                            type="action" 
+                            class="btn-primary"
+                            display="always"/>
+                </header>
                 <field name="code"/>
                 <field name="content"/>
                 <field name="question_type"/>
@@ -22,6 +101,12 @@
         <field name="model">exam.question</field>
         <field name="arch" type="xml">
             <form string="Câu Hỏi Toán Lớp 3">
+                <header>
+                    <button name="%(action_exam_question_import_wizard)d" 
+                            string="📥 Import Excel Câu Hỏi" 
+                            type="action" 
+                            class="btn-secondary"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <label for="code" string="Mã Câu Hỏi"/>
@@ -182,6 +267,159 @@
         <field name="search_view_id" ref="view_exam_exam_search"/>
     </record>
 
+    <!-- ==================== 2.5. ĐỢT KIỂM TRA (exam.batch) ==================== -->
+    <record id="view_exam_batch_list" model="ir.ui.view">
+        <field name="name">exam.batch.list</field>
+        <field name="model">exam.batch</field>
+        <field name="arch" type="xml">
+            <list string="Danh Sách Đợt Kiểm Tra">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="class_id"/>
+                <field name="grade_id"/>
+                <field name="batch_type" widget="badge"/>
+                <field name="exam_id"/>
+                <field name="date"/>
+                <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'"/>
+                <field name="total_students" string="Sĩ Số Thi"/>
+                <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
+                <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
+                <field name="pass_rate" widget="progressbar"/>
+                <field name="average_score" string="Điểm TB"/>
+                <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_exam_batch_form" model="ir.ui.view">
+        <field name="name">exam.batch.form</field>
+        <field name="model">exam.batch</field>
+        <field name="arch" type="xml">
+            <form string="Đợt Kiểm Tra Của Lớp">
+                <header>
+                    <button name="action_populate_students" 
+                            string="👥 Lập Danh Sách Học Sinh" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="status == 'completed'"/>
+                    <button name="action_open_import_wizard" 
+                            string="📥 Import Bài Làm Excel &amp; Chấm Điểm" 
+                            type="object" 
+                            class="btn-success" 
+                            invisible="status == 'completed'"/>
+                    <button name="action_create_retest_batch" 
+                            string="🔁 Tạo Đợt Thi Lại Cho HS Rớt" 
+                            type="object" 
+                            class="btn-warning" 
+                            invisible="failed_count == 0 or status != 'completed'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status">
+                        <div>
+                            <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-excel-o me-1"/> Thể Thức Thi Offline (Làm Bài Giấy / Excel):</h6>
+                            <p class="mb-0 small text-muted">Học sinh làm bài trên giấy hoặc bảng kiểm. Kết quả được lưu vào file Excel để tải lên hệ thống tự động chấm điểm, tính điểm chuẩn và gửi AI phân tích.</p>
+                        </div>
+                        <div class="ms-3">
+                            <button name="action_download_offline_template" 
+                                    string="📄 Tải Phiếu Nhập Bài Làm Excel" 
+                                    type="object" 
+                                    class="btn btn-outline-primary btn-sm fw-bold"/>
+                        </div>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" string="Tên Đợt Kiểm Tra"/>
+                        <h1><field name="name" placeholder="Ví dụ: Kiểm Tra Giữa Kỳ I - Lớp 3A1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông Tin Đợt Kiểm Tra">
+                            <field name="code" placeholder="GK-3A1-202610"/>
+                            <field name="class_id"/>
+                            <field name="grade_id"/>
+                            <field name="batch_type"/>
+                            <field name="exam_id" domain="[('status', '=', 'active')]"/>
+                            <field name="date"/>
+                            <field name="delivery_mode"/>
+                            <field name="parent_batch_id" invisible="not parent_batch_id" readonly="1"/>
+                        </group>
+                        <group string="Thống Kê Kết Quả Thi">
+                            <field name="total_students"/>
+                            <field name="graded_count"/>
+                            <field name="passed_count" decoration-success="passed_count &gt; 0"/>
+                            <field name="failed_count" decoration-danger="failed_count &gt; 0"/>
+                            <field name="pass_rate" widget="progressbar"/>
+                            <field name="average_score"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh Sách Bài Thi Của Học Sinh">
+                            <field name="session_ids" readonly="status == 'completed'">
+                                <list>
+                                    <field name="student_code" string="Mã Sinh Viên / Mã HS"/>
+                                    <field name="student_name" string="Họ Và Tên Học Sinh"/>
+                                    <field name="total_score" string="Điểm Đạt" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0"/>
+                                    <field name="correct_count" string="Số Đúng"/>
+                                    <field name="wrong_count" string="Số Sai"/>
+                                    <field name="percentage" widget="progressbar" string="Tỷ Lệ (%)"/>
+                                    <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
+                                    <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+                                    <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Các Đợt Thi Lại Phát Sinh" invisible="not retest_batch_ids">
+                            <field name="retest_batch_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="total_students"/>
+                                    <field name="passed_count"/>
+                                    <field name="failed_count"/>
+                                    <field name="pass_rate" widget="progressbar"/>
+                                    <field name="status" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Ghi Chú &amp; Hướng Dẫn">
+                            <field name="note" placeholder="Nhập ghi chú cho đợt thi này..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_exam_batch_search" model="ir.ui.view">
+        <field name="name">exam.batch.search</field>
+        <field name="model">exam.batch</field>
+        <field name="arch" type="xml">
+            <search string="Tìm Kiếm Đợt Kiểm Tra">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="class_id"/>
+                <field name="exam_id"/>
+                <filter string="Đang Diễn Ra" name="filter_in_progress" domain="[('status', '=', 'in_progress')]"/>
+                <filter string="Đã Hoàn Thành" name="filter_completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Đợt Thi Lại" name="filter_retest" domain="[('batch_type', '=', 'retest')]"/>
+                <group>
+                    <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
+                    <filter string="Loại Đợt" name="group_type" domain="[]" context="{'group_by': 'batch_type'}"/>
+                    <filter string="Đề Thi" name="group_exam" domain="[]" context="{'group_by': 'exam_id'}"/>
+                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_exam_batch" model="ir.actions.act_window">
+        <field name="name">Đợt Kiểm Tra Lớp Học</field>
+        <field name="res_model">exam.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_exam_batch_search"/>
+    </record>
+
     <!-- ==================== 3. LƯỢT LÀM BÀI (exam.session) ==================== -->
     <record id="view_exam_session_list" model="ir.ui.view">
         <field name="name">exam.session.list</field>
@@ -189,17 +427,21 @@
         <field name="arch" type="xml">
             <list string="Danh Sách Lượt Làm Bài">
                 <field name="name"/>
-                <field name="student_id"/>
-                <field name="exam_id"/>
-                <field name="class_id"/>
-                <field name="total_score" widget="float"/>
+                <field name="student_code" string="Mã HS"/>
+                <field name="student_name" string="Học Sinh"/>
+                <field name="batch_id" string="Đợt Kiểm Tra"/>
+                <field name="exam_id" string="Đề Thi"/>
+                <field name="class_id" string="Lớp Học"/>
+                <field name="total_score" widget="float" string="Điểm" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0"/>
                 <field name="total_possible" widget="float"/>
                 <field name="percentage" widget="progressbar"/>
-                <field name="correct_count"/>
-                <field name="wrong_count"/>
+                <field name="correct_count" string="Đúng"/>
+                <field name="wrong_count" string="Sai"/>
+                <field name="result_display" widget="badge" string="Kết Quả" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
                 <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+                <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
             </list>
         </field>
     </record>
@@ -249,7 +491,9 @@
                     </div>
                     <group>
                         <group string="Thông Tin Học Sinh &amp; Đề Thi">
+                            <field name="batch_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
                             <field name="student_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                            <field name="student_code" readonly="1"/>
                             <field name="exam_id" domain="[('status', '=', 'active')]" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
                             <field name="class_id" readonly="1"/>
                             <field name="time_limit_minutes" readonly="1"/>
@@ -264,6 +508,7 @@
                             <field name="percentage" widget="progressbar" invisible="status != 'Graded'"/>
                             <field name="correct_count" readonly="1" invisible="status != 'Graded'"/>
                             <field name="wrong_count" readonly="1" invisible="status != 'Graded'"/>
+                            <field name="result_display" widget="badge" readonly="1" invisible="status != 'Graded'" decoration-success="passed == True" decoration-danger="passed == False"/>
                         </group>
                     </group>
                     <notebook>
@@ -349,5 +594,70 @@
                 </footer>
             </form>
         </field>
+    </record>
+
+    <!-- ==================== 5. WIZARD IMPORT BÀI LÀM THI OFF TỪ EXCEL ==================== -->
+    <record id="view_exam_batch_offline_import_wizard_form" model="ir.ui.view">
+        <field name="name">exam.batch.offline.import.wizard.form</field>
+        <field name="model">exam.batch.offline.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Bài Làm Thi Offline Từ Excel">
+                <sheet>
+                    <field name="state" invisible="1"/>
+                    <div invisible="state != 'draft'">
+                        <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3" role="status">
+                            <div>
+                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-info-circle me-1"/> Quy Trình Nhập Bài Làm Thi Offline:</h6>
+                                <ol class="mb-0 ps-3 small">
+                                    <li>Mở đợt kiểm tra và bấm <strong>"📄 Tải Phiếu Nhập Bài Làm Excel"</strong> để nhận file mẫu đã điền sẵn danh sách học sinh và các cột câu hỏi.</li>
+                                    <li>Nhập đáp án của từng học sinh vào các cột câu hỏi tương ứng.</li>
+                                    <li>Tải file Excel đó lên biểu mẫu này và bấm <strong>"Bắt Đầu Chấm Điểm &amp; Phân Tích AI"</strong>.</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <group>
+                            <group string="Đợt Kiểm Tra &amp; Tệp Dữ Liệu">
+                                <field name="batch_id" readonly="1" options="{'no_open': True}"/>
+                                <field name="excel_file" filename="filename" widget="binary"/>
+                                <field name="filename" invisible="1"/>
+                            </group>
+                            <group string="Cấu Hình Chấm Điểm">
+                                <field name="auto_analyze"/>
+                            </group>
+                        </group>
+                    </div>
+
+                    <div invisible="state != 'done'">
+                        <field name="result_html" nolabel="1"/>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_import_offline_results" 
+                            string="🚀 Bắt Đầu Chấm Điểm &amp; Phân Tích AI" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="state != 'draft'"/>
+                    <button name="action_reset" 
+                            string="🔄 Tải Lên Tệp Khác" 
+                            type="object" 
+                            class="btn-secondary" 
+                            invisible="state != 'done'"/>
+                    <button name="action_view_batch" 
+                            string="📂 Xem Đợt Kiểm Tra" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="state != 'done'"/>
+                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_exam_batch_offline_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Bài Làm Thi Offline</field>
+        <field name="res_model">exam.batch.offline.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
     </record>
 </odoo>

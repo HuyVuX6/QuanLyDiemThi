@@ -51,17 +51,24 @@
               sequence="1"
               groups="group_school_teacher,group_school_manager"/>
 
+    <menuitem id="menu_exam_batch" 
+              name="Đợt Kiểm Tra" 
+              parent="menu_exam_management" 
+              action="action_exam_batch" 
+              sequence="2"
+              groups="group_school_teacher,group_school_manager"/>
+
     <menuitem id="menu_exam_exam" 
               name="Đề Thi Toán 3" 
               parent="menu_exam_management" 
               action="action_exam_exam" 
-              sequence="2"/>
+              sequence="3"/>
 
     <menuitem id="menu_exam_session" 
               name="Lượt Làm Bài" 
               parent="menu_exam_management" 
               action="action_exam_session" 
-              sequence="3"/>
+              sequence="4"/>
 
     <!-- 3. PHÂN HỆ TRÍ TUỆ NHÂN TẠO AI -->
     <menuitem id="menu_ai_management" 
