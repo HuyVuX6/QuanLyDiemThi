@@ -136,14 +136,20 @@
                                     <field name="name"/>
                                     <field name="batch_type" widget="badge"/>
                                     <field name="exam_id"/>
-                                    <field name="date"/>
+                                    <field name="start_datetime" string="Bắt Đầu"/>
+                                    <field name="end_datetime" string="Kết Thúc"/>
+                                    <field name="is_expired" invisible="1"/>
                                     <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'"/>
                                     <field name="total_students" string="Sĩ Số Thi"/>
                                     <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
                                     <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
                                     <field name="pass_rate" widget="progressbar"/>
                                     <field name="average_score" string="Điểm TB"/>
-                                    <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'"/>
+                                    <field name="status" widget="badge" 
+                                           decoration-info="status == 'draft'" 
+                                           decoration-warning="status == 'in_progress'" 
+                                           decoration-success="status == 'completed'" 
+                                           decoration-danger="status == 'locked'"/>
                                 </list>
                             </field>
                         </page>
@@ -161,7 +167,7 @@
                                     <field name="wrong_count" string="Số Câu Sai"/>
                                     <field name="percentage" widget="progressbar" string="Tỷ Lệ (%)"/>
                                     <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                                    <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+                                    <field name="status" widget="badge" decoration-muted="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
                                     <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm của học sinh này"/>
                                 </list>
                             </field>

@@ -162,14 +162,31 @@ class ExamBatch(models.Model):
     ], string='Đợt Kiểm Tra', default='midterm', required=True)
     exam_id = fields.Many2one('exam.exam', string='Đề Thi Áp Dụng', required=True, domain=[('status', '=', 'active')], ondelete='restrict')
     date = fields.Date(string='Ngày Kiểm Tra', default=fields.Date.today, required=True)
+    start_datetime = fields.Datetime(
+        string='Thời Gian Bắt Đầu',
+        default=fields.Datetime.now,
+        required=True
+    )
+    end_datetime = fields.Datetime(
+        string='Thời Gian Kết Thúc / Hạn Chót',
+        required=True,
+        default=lambda self: fields.Datetime.now() + timedelta(days=1),
+        help='Thời điểm hết hạn đợt kiểm tra. Khi quá thời gian này, đợt thi sẽ tự động bị khóa và không cho phép import thêm bài làm.'
+    )
+    is_expired = fields.Boolean(
+        string='Đã Hết Hạn',
+        compute='_compute_is_expired',
+        store=True,
+        help='Tự động xác định đợt kiểm tra đã quá thời gian kết thúc hay chưa'
+    )
     delivery_mode = fields.Selection([
-        ('offline', 'Thi Offline (Làm bài trên giấy / Excel)'),
-        ('online', 'Thi Trực Tuyến Trên Odoo'),
+        ('offline', 'Thi Offline (Làm bài trực tiếp / Excel)'),
     ], string='Thể Thức Thi', default='offline', required=True)
     status = fields.Selection([
         ('draft', 'Dự Thảo'),
         ('in_progress', 'Đang Diễn Ra'),
         ('completed', 'Đã Hoàn Thành & Chấm Điểm'),
+        ('locked', 'Đã Khóa (Hết Hạn)'),
     ], string='Trạng Thái', default='draft', required=True)
 
     parent_batch_id = fields.Many2one('exam.batch', string='Thuộc Đợt Gốc', ondelete='set null', help='Đợt kiểm tra gốc nếu đây là đợt thi lại')
@@ -184,6 +201,18 @@ class ExamBatch(models.Model):
     pass_rate = fields.Float(string='Tỷ Lệ Đạt (%)', compute='_compute_batch_stats', store=True)
     average_score = fields.Float(string='Điểm Trung Bình', compute='_compute_batch_stats', store=True)
     note = fields.Text(string='Ghi Chú')
+
+    @api.depends('end_datetime')
+    def _compute_is_expired(self):
+        now = fields.Datetime.now()
+        for record in self:
+            record.is_expired = bool(record.end_datetime and now > record.end_datetime)
+
+    @api.constrains('start_datetime', 'end_datetime')
+    def _check_batch_datetimes(self):
+        for record in self:
+            if record.start_datetime and record.end_datetime and record.end_datetime < record.start_datetime:
+                raise exceptions.ValidationError("Thời gian kết thúc / hạn chót phải sau thời gian bắt đầu đợt kiểm tra!")
 
     @api.onchange('class_id', 'batch_type')
     def _onchange_suggest_name(self):
@@ -217,9 +246,41 @@ class ExamBatch(models.Model):
                 record.pass_rate = 0.0
                 record.average_score = 0.0
 
+    def action_lock_batch(self):
+        """Khóa đợt kiểm tra, không cho phép chỉnh sửa hoặc import thêm bài làm"""
+        for record in self:
+            record.write({'status': 'locked'})
+        return True
+
+    def action_unlock_batch(self):
+        """Mở khóa đợt kiểm tra để tiếp tục chấm điểm hoặc gia hạn"""
+        for record in self:
+            new_status = 'in_progress' if record.session_ids else 'draft'
+            record.write({'status': new_status})
+        return True
+
+    @api.model
+    def cron_auto_lock_expired_batches(self):
+        """Tự động khóa các đợt kiểm tra đã quá thời gian kết thúc (end_datetime)"""
+        now = fields.Datetime.now()
+        expired_batches = self.search([
+            ('status', 'in', ['draft', 'in_progress']),
+            ('end_datetime', '<=', now),
+        ])
+        for batch in expired_batches:
+            _logger.info(f"Cron: Tự động khóa đợt kiểm tra quá hạn {batch.id} ({batch.name})")
+            batch.write({'status': 'locked'})
+
     def action_populate_students(self):
         """Tự động tạo lượt làm bài cho toàn bộ học sinh trong lớp"""
         self.ensure_one()
+        if self.status == 'locked' or (self.end_datetime and fields.Datetime.now() > self.end_datetime):
+            if self.status != 'locked':
+                self.write({'status': 'locked'})
+            raise exceptions.UserError(
+                f"Đợt kiểm tra '{self.name}' đã hết hạn vào lúc {self.end_datetime.strftime('%H:%M %d/%m/%Y')} và đã bị khóa!\n"
+                f"Không thể thêm học sinh vào đợt thi đã hết hạn."
+            )
         if not self.class_id:
             raise exceptions.UserError("Vui lòng chọn lớp học trước khi lập danh sách học sinh!")
         if not self.exam_id:
@@ -278,6 +339,8 @@ class ExamBatch(models.Model):
             'exam_id': self.exam_id.id,
             'parent_batch_id': self.id,
             'date': fields.Date.today(),
+            'start_datetime': fields.Datetime.now(),
+            'end_datetime': fields.Datetime.now() + timedelta(days=2),
             'delivery_mode': self.delivery_mode,
             'status': 'in_progress',
         })
@@ -305,6 +368,13 @@ class ExamBatch(models.Model):
     def action_open_import_wizard(self):
         """Mở wizard import bài làm thi offline từ file Excel"""
         self.ensure_one()
+        if self.status == 'locked' or (self.end_datetime and fields.Datetime.now() > self.end_datetime):
+            if self.status != 'locked':
+                self.write({'status': 'locked'})
+            raise exceptions.UserError(
+                f"Đợt kiểm tra '{self.name}' đã hết hạn vào lúc {self.end_datetime.strftime('%H:%M %d/%m/%Y')} và đã bị khóa!\n"
+                f"Không thể import bài làm vào đợt thi đã hết hạn."
+            )
         return {
             'name': f"Import Bài Làm Excel - {self.name}",
             'type': 'ir.actions.act_window',
@@ -361,18 +431,10 @@ class ExamSession(models.Model):
         ondelete='restrict'
     )
     start_time = fields.Datetime(string='Thời Gian Bắt Đầu')
-    end_time = fields.Datetime(string='Thời Gian Nộp Bài')
-    deadline = fields.Datetime(
-        string='Hạn Chót Nộp Bài', 
-        compute='_compute_deadline', 
-        store=True,
-        help='Thời điểm tối đa học sinh phải hoàn thành bài làm'
-    )
+    end_time = fields.Datetime(string='Thời Gian Chấm Điểm')
     status = fields.Selection([
-        ('NotStarted', 'Chưa Bắt Đầu'),
-        ('InProgress', 'Đang Làm'),
-        ('Submitted', 'Đã Nộp'),
-        ('Graded', 'Đã Chấm'),
+        ('NotStarted', 'Chưa Có Điểm'),
+        ('Graded', 'Đã Chấm Điểm'),
     ], default='NotStarted', string='Trạng Thái', required=True)
     auto_analyze = fields.Boolean(
         string='Tự Động Phân Tích AI',
@@ -519,21 +581,15 @@ class ExamSession(models.Model):
                     record.percentage = 0.0
 
     def action_start_exam(self):
-        """Bắt đầu tính giờ làm bài cho học sinh"""
-        for record in self:
-            if record.status != 'NotStarted':
-                raise exceptions.UserError("Bài thi này đã bắt đầu hoặc đã hoàn thành!")
-            record.write({
-                'start_time': fields.Datetime.now(),
-                'status': 'InProgress',
-            })
+        """Hệ thống áp dụng hình thức thi offline trên giấy, không làm bài trực tuyến"""
+        raise exceptions.UserError("Hệ thống áp dụng hình thức thi offline trên giấy. Toàn bộ bài làm của học sinh được giáo viên ghi nhận và import từ tệp Excel của đợt kiểm tra.")
 
     def action_submit_exam(self):
+        """Chấm điểm và phân tích AI cho bài thi học sinh"""
         self.ensure_one()
-        if not self.start_time:
-            self.start_time = fields.Datetime.now()
-        self.end_time = fields.Datetime.now()
         self.status = 'Graded'
+        if not self.end_time:
+            self.end_time = fields.Datetime.now()
         
         # Đảm bảo chấm lại điểm toàn bộ bài thi
         for answer in self.answer_ids:
@@ -577,21 +633,6 @@ class ExamSession(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
-
-    @api.model
-    def cron_auto_submit_expired_sessions(self):
-        """Tự động nộp bài và chấm điểm các phiên thi đã hết hạn làm bài"""
-        now = fields.Datetime.now()
-        expired_sessions = self.search([
-            ('status', '=', 'InProgress'),
-            ('deadline', '<=', now),
-        ])
-        for session in expired_sessions:
-            _logger.info(f"Cron: Tự động nộp bài cho phiên thi quá hạn {session.id} ({session.name})")
-            try:
-                session.action_submit_exam()
-            except Exception as e:
-                _logger.error(f"Lỗi tự động nộp bài cho phiên {session.id}: {str(e)}")
 
 
 class ExamAnswer(models.Model):
@@ -1118,6 +1159,14 @@ class ExamBatchOfflineImportWizard(models.TransientModel):
             raise exceptions.UserError("Vui lòng chọn tệp Excel bài làm để tải lên!")
 
         batch = self.batch_id
+        if batch.status == 'locked' or (batch.end_datetime and fields.Datetime.now() > batch.end_datetime):
+            if batch.status != 'locked':
+                batch.write({'status': 'locked'})
+            raise exceptions.UserError(
+                f"Đợt kiểm tra '{batch.name}' đã hết hạn vào lúc {batch.end_datetime.strftime('%H:%M %d/%m/%Y')} và đã bị khóa!\n"
+                f"Không thể import bài làm hoặc chấm điểm vào đợt thi đã hết hạn."
+            )
+
         if not batch.exam_id:
             raise exceptions.UserError("Đợt kiểm tra chưa gán đề thi! Không thể chấm điểm.")
 

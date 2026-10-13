@@ -11,12 +11,12 @@
             <field name="active" eval="True"/>
         </record>
 
-        <record id="ir_cron_auto_submit_expired_exams" model="ir.cron">
-            <field name="name">Educational System: Tự Động Nộp Đề Thi Hết Hạn</field>
-            <field name="model_id" ref="model_exam_session"/>
+        <record id="ir_cron_auto_lock_expired_batches" model="ir.cron">
+            <field name="name">Educational System: Tự Động Khóa Đợt Kiểm Tra Hết Hạn</field>
+            <field name="model_id" ref="model_exam_batch"/>
             <field name="state">code</field>
-            <field name="code">model.cron_auto_submit_expired_sessions()</field>
-            <field name="interval_number">1</field>
+            <field name="code">model.cron_auto_lock_expired_batches()</field>
+            <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
             <field name="active" eval="True"/>
         </record>

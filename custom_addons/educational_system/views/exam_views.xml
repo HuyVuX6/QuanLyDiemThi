@@ -279,14 +279,16 @@
                 <field name="grade_id"/>
                 <field name="batch_type" widget="badge"/>
                 <field name="exam_id"/>
-                <field name="date"/>
+                <field name="start_datetime" string="Bắt Đầu"/>
+                <field name="end_datetime" string="Hạn Chót / Kết Thúc"/>
+                <field name="is_expired" widget="boolean_toggle" string="Hết Hạn"/>
                 <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'"/>
                 <field name="total_students" string="Sĩ Số Thi"/>
                 <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
                 <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
                 <field name="pass_rate" widget="progressbar"/>
                 <field name="average_score" string="Điểm TB"/>
-                <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'"/>
+                <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'" decoration-danger="status == 'locked'"/>
             </list>
         </field>
     </record>
@@ -301,24 +303,44 @@
                             string="👥 Lập Danh Sách Học Sinh" 
                             type="object" 
                             class="btn-primary" 
-                            invisible="status == 'completed'"/>
+                            invisible="status in ('completed', 'locked')"/>
                     <button name="action_open_import_wizard" 
                             string="📥 Import Bài Làm Excel &amp; Chấm Điểm" 
                             type="object" 
                             class="btn-success" 
-                            invisible="status == 'completed'"/>
+                            invisible="status in ('completed', 'locked')"/>
+                    <button name="action_lock_batch" 
+                            string="🔒 Khóa Đợt Thi" 
+                            type="object" 
+                            class="btn-secondary" 
+                            invisible="status == 'locked'"/>
+                    <button name="action_unlock_batch" 
+                            string="🔓 Mở Khóa Đợt Thi" 
+                            type="object" 
+                            class="btn-outline-warning" 
+                            invisible="status != 'locked'" 
+                            groups="educational_system.group_school_manager,educational_system.group_school_teacher"/>
                     <button name="action_create_retest_batch" 
                             string="🔁 Tạo Đợt Thi Lại Cho HS Rớt" 
                             type="object" 
                             class="btn-warning" 
-                            invisible="failed_count == 0 or status != 'completed'"/>
-                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
+                            invisible="failed_count == 0 or status not in ('completed', 'locked')"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed,locked"/>
                 </header>
                 <sheet>
-                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status">
+                    <!-- Cảnh báo khi đợt thi đã bị khóa / hết hạn -->
+                    <div class="alert alert-danger d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'locked'">
                         <div>
-                            <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-excel-o me-1"/> Thể Thức Thi Offline (Làm Bài Giấy / Excel):</h6>
-                            <p class="mb-0 small text-muted">Học sinh làm bài trên giấy hoặc bảng kiểm. Kết quả được lưu vào file Excel để tải lên hệ thống tự động chấm điểm, tính điểm chuẩn và gửi AI phân tích.</p>
+                            <i class="fa fa-lock fa-2x me-2 align-middle text-danger"/>
+                            <span class="fs-5 align-middle fw-semibold">Đợt kiểm tra này đã kết thúc vào lúc <strong><field name="end_datetime" readonly="1"/></strong> và đã bị khóa. Không thể nhập thêm bài làm.</span>
+                        </div>
+                    </div>
+
+                    <!-- Banner hướng dẫn thể thức thi offline -->
+                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status == 'locked'">
+                        <div>
+                            <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-excel-o me-1"/> Thể Thức Thi Offline (Làm Bài Ngoài Đời Thực / Chấm Bằng Excel):</h6>
+                            <p class="mb-0 small text-muted">Học sinh làm bài trực tiếp trên giấy. Kết quả bài làm được giáo viên ghi vào file Excel và tải lên hệ thống để tự động chấm điểm và kích hoạt phân tích Claude AI.</p>
                         </div>
                         <div class="ms-3">
                             <button name="action_download_offline_template" 
@@ -330,31 +352,39 @@
 
                     <div class="oe_title">
                         <label for="name" string="Tên Đợt Kiểm Tra"/>
-                        <h1><field name="name" placeholder="Ví dụ: Kiểm Tra Giữa Kỳ I - Lớp 3A1"/></h1>
+                        <h1><field name="name" placeholder="Ví dụ: Kiểm Tra Giữa Kỳ I - Lớp 3A1" readonly="status == 'locked'"/></h1>
                     </div>
                     <group>
                         <group string="Thông Tin Đợt Kiểm Tra">
-                            <field name="code" placeholder="GK-3A1-202610"/>
-                            <field name="class_id"/>
+                            <field name="code" placeholder="GK-3A1-202610" readonly="status == 'locked'"/>
+                            <field name="class_id" readonly="status == 'locked'"/>
                             <field name="grade_id"/>
-                            <field name="batch_type"/>
-                            <field name="exam_id" domain="[('status', '=', 'active')]"/>
-                            <field name="date"/>
-                            <field name="delivery_mode"/>
+                            <field name="batch_type" readonly="status == 'locked'"/>
+                            <field name="exam_id" domain="[('status', '=', 'active')]" readonly="status == 'locked'"/>
                             <field name="parent_batch_id" invisible="not parent_batch_id" readonly="1"/>
                         </group>
-                        <group string="Thống Kê Kết Quả Thi">
+                        <group string="Thời Gian &amp; Hạn Chót Khóa Đợt">
+                            <field name="start_datetime" readonly="status == 'locked'"/>
+                            <field name="end_datetime" readonly="status == 'locked'"/>
+                            <field name="is_expired" widget="boolean_toggle" readonly="1"/>
+                            <field name="delivery_mode" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Thống Kê Kết Quả Thi">
+                        <group>
                             <field name="total_students"/>
                             <field name="graded_count"/>
+                            <field name="average_score"/>
+                        </group>
+                        <group>
                             <field name="passed_count" decoration-success="passed_count &gt; 0"/>
                             <field name="failed_count" decoration-danger="failed_count &gt; 0"/>
                             <field name="pass_rate" widget="progressbar"/>
-                            <field name="average_score"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Danh Sách Bài Thi Của Học Sinh">
-                            <field name="session_ids" readonly="status == 'completed'">
+                            <field name="session_ids" readonly="status in ('completed', 'locked')">
                                 <list>
                                     <field name="student_code" string="Mã Sinh Viên / Mã HS"/>
                                     <field name="student_name" string="Họ Và Tên Học Sinh"/>
@@ -363,7 +393,7 @@
                                     <field name="wrong_count" string="Số Sai"/>
                                     <field name="percentage" widget="progressbar" string="Tỷ Lệ (%)"/>
                                     <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                                    <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+                                    <field name="status" widget="badge" decoration-info="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
                                     <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
                                 </list>
                             </field>
@@ -373,7 +403,8 @@
                                 <list>
                                     <field name="code"/>
                                     <field name="name"/>
-                                    <field name="date"/>
+                                    <field name="start_datetime"/>
+                                    <field name="end_datetime"/>
                                     <field name="total_students"/>
                                     <field name="passed_count"/>
                                     <field name="failed_count"/>
@@ -402,6 +433,8 @@
                 <field name="exam_id"/>
                 <filter string="Đang Diễn Ra" name="filter_in_progress" domain="[('status', '=', 'in_progress')]"/>
                 <filter string="Đã Hoàn Thành" name="filter_completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Đã Khóa / Hết Hạn" name="filter_locked" domain="[('status', '=', 'locked')]"/>
+                <filter string="Chưa Khóa" name="filter_unlocked" domain="[('status', '!=', 'locked')]"/>
                 <filter string="Đợt Thi Lại" name="filter_retest" domain="[('batch_type', '=', 'retest')]"/>
                 <group>
                     <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
@@ -438,9 +471,8 @@
                 <field name="correct_count" string="Đúng"/>
                 <field name="wrong_count" string="Sai"/>
                 <field name="result_display" widget="badge" string="Kết Quả" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                <field name="start_time"/>
-                <field name="end_time"/>
-                <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
+                <field name="end_time" string="Thời Gian Chấm"/>
+                <field name="status" widget="badge" decoration-info="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
                 <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
             </list>
         </field>
@@ -452,36 +484,34 @@
         <field name="arch" type="xml">
             <form string="Lượt Làm Bài Của Học Sinh">
                 <header>
-                    <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="oe_highlight btn-success" invisible="status != 'NotStarted'"/>
-                    <button name="action_submit_exam" string="Nộp Bài &amp; Tự Động Chấm Điểm" type="object" class="oe_highlight btn-primary" invisible="status != 'InProgress'"/>
-                    <field name="status" widget="statusbar" statusbar_visible="NotStarted,InProgress,Graded"/>
+                    <button name="action_submit_exam" 
+                            string="Chấm Điểm &amp; Phân Tích AI" 
+                            type="object" 
+                            class="oe_highlight btn-primary" 
+                            groups="educational_system.group_school_teacher,educational_system.group_school_manager" 
+                            invisible="status == 'Graded'"/>
+                    <button name="action_submit_exam" 
+                            string="Chấm Lại &amp; Phân Tích Lại" 
+                            type="object" 
+                            class="btn-secondary" 
+                            groups="educational_system.group_school_teacher,educational_system.group_school_manager" 
+                            invisible="status != 'Graded'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="NotStarted,Graded"/>
                 </header>
                 <sheet>
-                    <!-- Banner 1: Chưa bắt đầu -->
-                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'NotStarted'">
+                    <!-- Banner khi chưa có điểm -->
+                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status == 'Graded'">
                         <div>
                             <i class="fa fa-info-circle fa-2x me-2 align-middle text-primary"/>
-                            <span class="fs-5 align-middle">Thời gian làm bài: <strong><field name="time_limit_minutes" readonly="1"/> phút</strong>. Vui lòng bấm <strong>"Bắt Đầu Làm Bài"</strong> để tính giờ và làm bài.</span>
-                        </div>
-                        <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="btn btn-success btn-lg ms-3"/>
-                    </div>
-
-                    <!-- Banner 2: Đang làm bài kèm đồng hồ đếm ngược -->
-                    <div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'InProgress'">
-                        <div>
-                            <i class="fa fa-pencil-square-o fa-2x me-2 align-middle text-warning"/>
-                            <span class="fs-5 align-middle fw-semibold">Đang trong thời gian làm bài thi. Hãy tập trung trả lời các câu hỏi bên dưới!</span>
-                        </div>
-                        <div>
-                            <field name="deadline" widget="exam_countdown_timer" readonly="1"/>
+                            <span class="fs-5 align-middle">Phiên thi ngoại tuyến (Offline). Điểm số và chi tiết bài làm sẽ được cập nhật tự động khi giáo viên import kết quả từ tệp Excel của đợt kiểm tra.</span>
                         </div>
                     </div>
 
-                    <!-- Banner 3: Đã hoàn thành -->
+                    <!-- Banner khi đã chấm điểm -->
                     <div class="alert alert-success d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'Graded'">
                         <div>
                             <i class="fa fa-check-circle fa-2x me-2 align-middle text-success"/>
-                            <span class="fs-5 align-middle fw-semibold">Bài thi đã hoàn thành và chấm điểm! Điểm số: <strong><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/> (<field name="percentage" readonly="1"/>%)</strong></span>
+                            <span class="fs-5 align-middle fw-semibold">Bài thi đã được chấm điểm! Điểm số: <strong><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/> (<field name="percentage" readonly="1"/>%)</strong> - Đánh giá: <strong><field name="result_display" readonly="1"/></strong></span>
                         </div>
                     </div>
 
@@ -491,37 +521,32 @@
                     </div>
                     <group>
                         <group string="Thông Tin Học Sinh &amp; Đề Thi">
-                            <field name="batch_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
-                            <field name="student_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="student_id" readonly="1"/>
                             <field name="student_code" readonly="1"/>
-                            <field name="exam_id" domain="[('status', '=', 'active')]" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                            <field name="exam_id" readonly="1"/>
                             <field name="class_id" readonly="1"/>
-                            <field name="time_limit_minutes" readonly="1"/>
                             <field name="auto_analyze"/>
                         </group>
-                        <group string="Thời Gian &amp; Kết Quả">
-                            <field name="start_time" readonly="1"/>
-                            <field name="deadline" readonly="1"/>
-                            <field name="end_time" readonly="1"/>
+                        <group string="Kết Quả Bài Làm">
                             <field name="total_possible" readonly="1"/>
                             <field name="total_score" readonly="1" invisible="status != 'Graded'"/>
                             <field name="percentage" widget="progressbar" invisible="status != 'Graded'"/>
                             <field name="correct_count" readonly="1" invisible="status != 'Graded'"/>
                             <field name="wrong_count" readonly="1" invisible="status != 'Graded'"/>
                             <field name="result_display" widget="badge" readonly="1" invisible="status != 'Graded'" decoration-success="passed == True" decoration-danger="passed == False"/>
+                            <field name="end_time" readonly="1" invisible="status != 'Graded'"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Bộ Câu Hỏi &amp; Bài Làm">
-                            <!-- Khóa create="0" delete="0": Học sinh không tự ý thêm bớt câu hỏi mà làm đúng các câu hỏi của đề thi -->
-                            <!-- readonly="status in ('NotStarted', 'Submitted', 'Graded')": Chỉ mở khi đang trong giờ làm bài -->
-                            <field name="answer_ids" readonly="status in ('NotStarted', 'Submitted', 'Graded')">
-                                <list editable="bottom" create="0" delete="0">
+                            <field name="answer_ids" readonly="1">
+                                <list create="0" delete="0">
                                     <field name="question_id" readonly="1" force_save="1" options="{'no_open': True}"/>
                                     <field name="question_content" string="Nội Dung Câu Hỏi" readonly="1"/>
                                     <field name="question_type" string="Dạng Câu" readonly="1"/>
                                     <field name="question_points" string="Thang Điểm" readonly="1"/>
-                                    <field name="answer_given" placeholder="Nhập đáp án tại đây..."/>
+                                    <field name="answer_given" string="Đáp Án Học Sinh (Từ Excel)" readonly="1"/>
                                     <field name="is_correct" widget="boolean_toggle" readonly="1" column_invisible="parent.status != 'Graded'"/>
                                     <field name="points_earned" string="Điểm Đạt" readonly="1" column_invisible="parent.status != 'Graded'"/>
                                 </list>
