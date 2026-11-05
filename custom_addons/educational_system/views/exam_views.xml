@@ -11,17 +11,17 @@
                     <div invisible="state != 'draft'">
                         <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3" role="status">
                             <div>
-                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-info-circle me-1" title="Hướng dẫn"/> Bộ Nguyên Tắc Import Câu Hỏi Toán Lớp 3:</h6>
+                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-info-circle me-1" title="Hướng dẫn"/> Bộ Nguyên Tắc Import Câu Hỏi Trắc Nghiệm Toán Lớp 3:</h6>
                                 <ul class="mb-0 ps-3 small">
                                     <li>Định dạng tệp: <strong>.xlsx</strong> hoặc <strong>.xls</strong>. Dòng 1 là tiêu đề cột, dữ liệu tính từ dòng 2.</li>
-                                    <li>Các cột bắt buộc (*): <strong>Mã Câu Hỏi, Nội Dung, Chủ Đề, Đáp Án Chuẩn</strong>.</li>
+                                    <li>Các cột bắt buộc (*): <strong>Mã Câu Hỏi, Nội Dung, Chủ Đề, Phương Án A, Phương Án B, Phương Án C, Phương Án D, Đáp Án Đúng (A/B/C/D)</strong>.</li>
                                     <li>Chủ đề hợp lệ: <em>Phép Cộng, Phép Trừ, Phép Nhân, Phép Chia, Hình Học, Toán Lời Văn</em>.</li>
-                                    <li>Dạng câu hỏi: <em>Điền số (mặc định), Trắc nghiệm (A, B, C, D), Tự luận ngắn</em>.</li>
-                                    <li>Độ khó: <em>Dễ, Trung Bình, Khó</em>. Điểm mặc định: <em>1.0</em>.</li>
+                                    <li>Đáp án đúng: Nhập chính xác một trong 4 chữ cái <strong>A, B, C</strong> hoặc <strong>D</strong>.</li>
+                                    <li>Độ khó: <em>Dễ, Trung Bình, Khó</em>. Điểm mặc định: <em>1.0</em> (tự động chia đều theo thang điểm 10 khi làm bài).</li>
                                 </ul>
                             </div>
                             <div class="ms-3">
-                                <a href="/educational_system/download_question_template" class="btn btn-outline-primary btn-sm text-nowrap fw-bold" role="button"><i class="fa fa-download me-1" title="Tải về"/> 📄 Tải File Excel Mẫu</a>
+                                <a href="/educational_system/download_question_template" class="btn btn-outline-primary btn-sm text-nowrap fw-bold" role="button"><i class="fa fa-download me-1" title="Tải về"/> 📄 Tải File Excel Mẫu Trắc Nghiệm</a>
                             </div>
                         </div>
 
@@ -30,7 +30,8 @@
                                 <field name="excel_file" filename="filename" widget="binary"/>
                                 <field name="filename" invisible="1"/>
                             </group>
-                            <group string="Quy Tắc Xử Lý">
+                            <group string="Quy Tắc Xử Lý &amp; Phân Khối">
+                                <field name="grade_id" placeholder="Chọn Khối Lớp (VD: Khối Lớp 3)..."/>
                                 <field name="duplicate_behavior"/>
                                 <field name="default_points"/>
                             </group>
@@ -72,12 +73,19 @@
         <field name="binding_view_types">list,form</field>
     </record>
 
-    <!-- ==================== 1. NGÂN HÀNG CÂU HỎI (exam.question) ==================== -->
+    <!-- ==================== 1. NGÂN HÀNG CÂU HỎI TRẮC NGHIỆM (exam.question) ==================== -->
+    <record id="action_exam_add_calculation_wizard" model="ir.actions.act_window">
+        <field name="name">Thêm Phép Tính Trực Tiếp</field>
+        <field name="res_model">exam.add.calculation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
     <record id="view_exam_question_list" model="ir.ui.view">
         <field name="name">exam.question.list</field>
         <field name="model">exam.question</field>
         <field name="arch" type="xml">
-            <list string="Ngân Hàng Câu Hỏi Toán 3">
+            <list string="Ngân Hàng Câu Hỏi Trắc Nghiệm Toán 3">
                 <header>
                     <button name="%(action_exam_question_import_wizard)d" 
                             string="📥 Import Excel Câu Hỏi" 
@@ -86,11 +94,15 @@
                             display="always"/>
                 </header>
                 <field name="code"/>
+                <field name="grade_id" string="Khối Lớp"/>
                 <field name="content"/>
-                <field name="question_type"/>
+                <field name="option_a" string="A"/>
+                <field name="option_b" string="B"/>
+                <field name="option_c" string="C"/>
+                <field name="option_d" string="D"/>
+                <field name="correct_answer" widget="badge" decoration-success="True" string="Đ.Án"/>
                 <field name="topic"/>
                 <field name="difficulty" widget="badge" decoration-success="difficulty == 'Easy'" decoration-warning="difficulty == 'Medium'" decoration-danger="difficulty == 'Hard'"/>
-                <field name="correct_answer"/>
                 <field name="points"/>
             </list>
         </field>
@@ -100,7 +112,7 @@
         <field name="name">exam.question.form</field>
         <field name="model">exam.question</field>
         <field name="arch" type="xml">
-            <form string="Câu Hỏi Toán Lớp 3">
+            <form string="Câu Hỏi Trắc Nghiệm Theo Khối Lớp">
                 <header>
                     <button name="%(action_exam_question_import_wizard)d" 
                             string="📥 Import Excel Câu Hỏi" 
@@ -110,23 +122,31 @@
                 <sheet>
                     <div class="oe_title">
                         <label for="code" string="Mã Câu Hỏi"/>
-                        <h1><field name="code" placeholder="CH-T3-001"/></h1>
+                        <h1><field name="code" placeholder="CH-TN-001"/></h1>
                     </div>
                     <group>
-                        <group string="Phân Loại &amp; Thang Điểm">
+                        <group string="Phân Khối, Chủ Đề &amp; Thang Điểm">
+                            <field name="grade_id" placeholder="Chọn Khối Lớp (VD: Khối Lớp 3)..."/>
                             <field name="topic"/>
                             <field name="difficulty"/>
-                            <field name="question_type"/>
                             <field name="points"/>
                         </group>
-                        <group string="Cấu Hình Đáp Án">
-                            <field name="correct_answer" placeholder="Ví dụ: 15 hoặc A"/>
-                            <field name="acceptable_answers" placeholder="Ví dụ: 15 quả|15 quả táo (ngăn cách bởi dấu | hoặc ;)"/>
-                            <field name="tolerance" invisible="question_type != 'numeric'"/>
+                        <group string="Đáp Án Chuẩn Của Câu Hỏi">
+                            <field name="correct_answer" widget="radio" options="{'horizontal': true}"/>
                         </group>
                     </group>
-                    <group string="Nội Dung Câu Hỏi">
-                        <field name="content" nolabel="1" placeholder="Nhập đề bài câu hỏi tại đây..."/>
+                    <group string="Nội Dung Đề Bài">
+                        <field name="content" nolabel="1" placeholder="Nhập đề bài câu hỏi trắc nghiệm tại đây..."/>
+                    </group>
+                    <group string="4 Phương Án Trắc Nghiệm (A, B, C, D)">
+                        <group>
+                            <field name="option_a" placeholder="Phương án A..."/>
+                            <field name="option_b" placeholder="Phương án B..."/>
+                        </group>
+                        <group>
+                            <field name="option_c" placeholder="Phương án C..."/>
+                            <field name="option_d" placeholder="Phương án D..."/>
+                        </group>
                     </group>
                     <group string="Hướng Dẫn Giải / Đáp Án Chi Tiết">
                         <field name="explanation" nolabel="1" placeholder="Nhập lời giải thích mẫu hoặc phương pháp giải..."/>
@@ -142,18 +162,26 @@
         <field name="arch" type="xml">
             <search string="Tìm Kiếm Câu Hỏi">
                 <field name="code"/>
+                <field name="grade_id" string="Khối Lớp"/>
                 <field name="content"/>
+                <field name="option_a"/>
+                <field name="option_b"/>
+                <field name="option_c"/>
+                <field name="option_d"/>
                 <field name="correct_answer"/>
                 <filter string="Phép Cộng" name="filter_add" domain="[('topic', '=', 'Addition')]"/>
                 <filter string="Phép Trừ" name="filter_sub" domain="[('topic', '=', 'Subtraction')]"/>
                 <filter string="Phép Nhân" name="filter_mul" domain="[('topic', '=', 'Multiplication')]"/>
                 <filter string="Phép Chia" name="filter_div" domain="[('topic', '=', 'Division')]"/>
+                <filter string="Phép Hỗn Hợp" name="filter_mixed" domain="[('topic', '=', 'MixedOperation')]"/>
+                <filter string="Tìm x" name="filter_find_x" domain="[('topic', '=', 'FindX')]"/>
                 <filter string="Hình Học" name="filter_geo" domain="[('topic', '=', 'Geometry')]"/>
                 <filter string="Toán Lời Văn" name="filter_word" domain="[('topic', '=', 'WordProblem')]"/>
                 <separator/>
                 <filter string="Mức Độ Dễ" name="filter_easy" domain="[('difficulty', '=', 'Easy')]"/>
                 <filter string="Mức Độ Khó" name="filter_hard" domain="[('difficulty', '=', 'Hard')]"/>
                 <group>
+                    <filter string="Khối Lớp" name="group_grade" domain="[]" context="{'group_by': 'grade_id'}"/>
                     <filter string="Chủ Đề" name="group_topic" domain="[]" context="{'group_by': 'topic'}"/>
                     <filter string="Độ Khó" name="group_difficulty" domain="[]" context="{'group_by': 'difficulty'}"/>
                     <filter string="Dạng Câu Hỏi" name="group_qtype" domain="[]" context="{'group_by': 'question_type'}"/>
@@ -174,15 +202,17 @@
         <field name="name">exam.exam.list</field>
         <field name="model">exam.exam</field>
         <field name="arch" type="xml">
-            <list string="Danh Sách Đề Thi">
-                <field name="code"/>
+            <list string="Danh Sách Đề Thi Theo Khối">
+                <field name="code" string="Mã Đề (6 Số)"/>
                 <field name="name"/>
+                <field name="grade_id" string="Khối Lớp"/>
                 <field name="exam_type"/>
                 <field name="topic"/>
                 <field name="total_questions"/>
                 <field name="total_score"/>
                 <field name="time_limit_minutes"/>
-                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-info="status == 'draft'" decoration-muted="status == 'closed'"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-danger="status == 'closed'"/>
+                <button name="action_delete_exam" string="Xóa" type="object" icon="fa-trash" class="text-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này"/>
             </list>
         </field>
     </record>
@@ -194,7 +224,8 @@
             <form string="Đề Thi">
                 <header>
                     <button name="action_open_assign_wizard" string="Gán Đề Cho Lớp / Học Sinh" type="object" class="oe_highlight" invisible="status != 'active'"/>
-                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                    <button name="action_delete_exam" string="🗑️ Xóa Bài Kiểm Tra" type="object" class="btn-outline-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?"/>
+                    <field name="status" widget="statusbar" statusbar_visible="active,closed" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -202,8 +233,9 @@
                         <h1><field name="name" placeholder="Ví dụ: Đề Kiểm Tra Giữa Kỳ I - Toán 3"/></h1>
                     </div>
                     <group>
-                        <group string="Cấu Hình Đề Thi">
-                            <field name="code" placeholder="DE-T3-GK1"/>
+                        <group string="Cấu Hình Đề Thi &amp; Phân Khối">
+                            <field name="code" placeholder="102345"/>
+                            <field name="grade_id" placeholder="Chọn Khối Lớp (VD: Khối Lớp 3)..."/>
                             <field name="exam_type"/>
                             <field name="topic"/>
                             <field name="auto_analyze"/>
@@ -216,10 +248,16 @@
                     </group>
                     <notebook>
                         <page string="Ngân Hàng Câu Hỏi Trong Đề">
-                            <field name="question_ids">
-                                <list>
-                                    <field name="code"/>
-                                    <field name="content"/>
+                            <field name="question_ids" domain="[('grade_id', 'in', [grade_id, False])]">
+                                <list editable="bottom">
+                                    <field name="code" optional="show"/>
+                                    <field name="grade_id" optional="show"/>
+                                    <field name="content" string="Nội Dung / Phép Tính"/>
+                                    <field name="option_a" string="A"/>
+                                    <field name="option_b" string="B"/>
+                                    <field name="option_c" string="C"/>
+                                    <field name="option_d" string="D"/>
+                                    <field name="correct_answer" widget="badge" decoration-success="True" string="Đ.Án"/>
                                     <field name="topic"/>
                                     <field name="difficulty"/>
                                     <field name="points"/>
@@ -229,10 +267,11 @@
                         <page string="Lịch Sử Làm Bài Của Học Sinh">
                             <field name="session_ids" readonly="1">
                                 <list>
+                                    <field name="sbd" string="SBD (6 Số)"/>
                                     <field name="student_id"/>
-                                    <field name="class_id"/>
+                                    <field name="class_id" string="Lớp Lúc Thi"/>
                                     <field name="total_score"/>
-                                    <field name="percentage" widget="progressbar"/>
+                                    <field name="correct_ratio" string="Số Câu Đúng"/>
                                     <field name="status"/>
                                 </list>
                             </field>
@@ -248,12 +287,19 @@
         <field name="model">exam.exam</field>
         <field name="arch" type="xml">
             <search string="Tìm Kiếm Đề Thi">
-                <field name="name"/>
-                <field name="code"/>
-                <field name="topic"/>
+                <field name="name" string="Tên Đề Thi, Mã hoặc Nội Dung Câu Hỏi" 
+                       filter_domain="['|', '|', '|', ('name', 'ilike', self), ('code', 'ilike', self), ('question_ids.content', 'ilike', self), ('question_ids.code', 'ilike', self)]"/>
+                <field name="code" string="Mã Đề Thi"/>
+                <field name="grade_id" string="Khối Lớp"/>
+                <field name="topic" string="Chủ Đề Đề Thi"/>
+                <field name="question_ids" string="Nội Dung Câu Hỏi Trong Đề" 
+                       filter_domain="['|', ('question_ids.content', 'ilike', self), ('question_ids.code', 'ilike', self)]"/>
                 <filter string="Đang Hoạt Động" name="filter_active" domain="[('status', '=', 'active')]"/>
+                <filter string="Đã Đóng" name="filter_closed" domain="[('status', '=', 'closed')]"/>
                 <group>
+                    <filter string="Khối Lớp" name="group_grade" domain="[]" context="{'group_by': 'grade_id'}"/>
                     <filter string="Loại Đề Thi" name="group_type" domain="[]" context="{'group_by': 'exam_type'}"/>
+                    <filter string="Chủ Đề" name="group_topic" domain="[]" context="{'group_by': 'topic'}"/>
                     <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
                 </group>
             </search>
@@ -261,7 +307,7 @@
     </record>
 
     <record id="action_exam_exam" model="ir.actions.act_window">
-        <field name="name">Đề Thi Toán 3</field>
+        <field name="name">Đề Thi Theo Khối</field>
         <field name="res_model">exam.exam</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_exam_exam_search"/>
@@ -273,20 +319,22 @@
         <field name="model">exam.batch</field>
         <field name="arch" type="xml">
             <list string="Danh Sách Đợt Kiểm Tra">
-                <field name="code"/>
-                <field name="name"/>
-                <field name="class_id"/>
-                <field name="grade_id"/>
-                <field name="batch_type" widget="badge"/>
-                <field name="exam_id"/>
-                <field name="date"/>
-                <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'"/>
-                <field name="total_students" string="Sĩ Số Thi"/>
+                <field name="code" string="Mã Đợt"/>
+                <field name="name" string="Tên Đợt Thi"/>
+                <field name="class_id" string="Lớp"/>
+                <field name="grade_id" string="Khối"/>
+                <field name="batch_type" widget="badge" string="Loại Đợt"/>
+                <field name="exam_id" string="Đề Thi"/>
+                <field name="start_datetime" string="Bắt Đầu"/>
+                <field name="end_datetime" string="Hạn Chót"/>
+                <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'" string="Hình Thức"/>
+                <field name="total_students" string="Sĩ Số"/>
                 <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
                 <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
-                <field name="pass_rate" widget="progressbar"/>
-                <field name="average_score" string="Điểm TB"/>
-                <field name="status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'in_progress'" decoration-success="status == 'completed'"/>
+                <field name="pass_rate" widget="progressbar" string="Tỷ Lệ Đạt"/>
+                <field name="average_score" string="ĐiểmTB"/>
+                <field name="status" widget="badge" decoration-warning="status == 'draft'" decoration-success="status == 'in_progress'" decoration-danger="status == 'completed'"/>
+                <button name="action_delete_batch" string="Xóa" type="object" icon="fa-trash" class="text-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này"/>
             </list>
         </field>
     </record>
@@ -298,33 +346,54 @@
             <form string="Đợt Kiểm Tra Của Lớp">
                 <header>
                     <button name="action_populate_students" 
-                            string="👥 Lập Danh Sách Học Sinh" 
+                            string="👥 Lập Danh Sách &amp; Cấp SBD (6 Số)" 
                             type="object" 
                             class="btn-primary" 
-                            invisible="status == 'completed'"/>
-                    <button name="action_open_import_wizard" 
-                            string="📥 Import Bài Làm Excel &amp; Chấm Điểm" 
+                            invisible="status != 'draft'"/>
+                    <button name="action_start_batch" 
+                            string="▶ Bắt Đầu Đợt Kiểm Tra" 
                             type="object" 
                             class="btn-success" 
-                            invisible="status == 'completed'"/>
+                            invisible="status != 'draft'"/>
+                    <button name="action_print_exam_paper" 
+                            string="📄 In Đề Thi (A4)" 
+                            type="object" 
+                            class="btn-outline-primary"/>
+                    <button name="action_print_answer_sheet_blank" 
+                            string="📥 Tải Phiếu Trả Lời Trống (PDF)" 
+                            type="object" 
+                            class="btn-outline-secondary" 
+                            icon="fa-download"/>
+                    <button name="action_open_batch_scan_wizard" 
+                            string="📦 Tải File .RAR Chấm Bài Hàng Loạt" 
+                            type="object" 
+                            class="btn-success" 
+                            invisible="status != 'in_progress'"/>
+                    <button name="action_finish_batch" 
+                            string="✅ Hoàn Tất Đợt Kiểm Tra" 
+                            type="object" 
+                            class="btn-primary" 
+                            invisible="status != 'in_progress'"/>
                     <button name="action_create_retest_batch" 
                             string="🔁 Tạo Đợt Thi Lại Cho HS Rớt" 
                             type="object" 
                             class="btn-warning" 
                             invisible="failed_count == 0 or status != 'completed'"/>
+                    <button name="action_delete_batch" 
+                            string="🗑️ Xóa Bài Kiểm Tra" 
+                            type="object" 
+                            class="btn-outline-danger" 
+                            confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
                 </header>
                 <sheet>
+                    <!-- Banner hướng dẫn thể thức thi offline & chấm hàng loạt bằng file RAR -->
                     <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status">
                         <div>
-                            <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-excel-o me-1"/> Thể Thức Thi Offline (Làm Bài Giấy / Excel):</h6>
-                            <p class="mb-0 small text-muted">Học sinh làm bài trên giấy hoặc bảng kiểm. Kết quả được lưu vào file Excel để tải lên hệ thống tự động chấm điểm, tính điểm chuẩn và gửi AI phân tích.</p>
-                        </div>
-                        <div class="ms-3">
-                            <button name="action_download_offline_template" 
-                                    string="📄 Tải Phiếu Nhập Bài Làm Excel" 
-                                    type="object" 
-                                    class="btn btn-outline-primary btn-sm fw-bold"/>
+                            <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-archive-o me-1"/> Quy Trình Cấp Số Báo Danh (6 Chữ Số) &amp; Chấm Bài Hàng Loạt Qua Tệp Nén (.RAR):</h6>
+                            <p class="mb-0 small text-muted">
+                                Mỗi học sinh trong đợt kiểm tra được cấp tự động 1 <strong>Số Báo Danh (SBD) gồm 6 chữ số</strong> (tương ứng mục 7 trên Phiếu Trả Lời Trắc Nghiệm OMR 50 Câu). Giáo viên nén toàn bộ hình ảnh phiếu trả lời trắc nghiệm của cả lớp vào một file <strong>.RAR</strong> (hoặc .ZIP) và tải lên hệ thống để tự động giải nén, quét SBD đã tô đen, đối chiếu Mã đề và chấm điểm hàng loạt.
+                            </p>
                         </div>
                     </div>
 
@@ -338,33 +407,42 @@
                             <field name="class_id"/>
                             <field name="grade_id"/>
                             <field name="batch_type"/>
-                            <field name="exam_id" domain="[('status', '=', 'active')]"/>
-                            <field name="date"/>
-                            <field name="delivery_mode"/>
+                            <field name="exam_id" domain="[('status', '=', 'active'), ('grade_id', 'in', [grade_id, False])]"/>
                             <field name="parent_batch_id" invisible="not parent_batch_id" readonly="1"/>
                         </group>
-                        <group string="Thống Kê Kết Quả Thi">
-                            <field name="total_students"/>
-                            <field name="graded_count"/>
-                            <field name="passed_count" decoration-success="passed_count &gt; 0"/>
-                            <field name="failed_count" decoration-danger="failed_count &gt; 0"/>
-                            <field name="pass_rate" widget="progressbar"/>
-                            <field name="average_score"/>
+                        <group string="Thời Gian Đợt Kiểm Tra">
+                            <field name="start_datetime" string="Bắt Đầu"/>
+                            <field name="end_datetime" string="Hạn Chót"/>
+                            <field name="delivery_mode" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Thống Kê ĐiểmTB &amp; Kết Quả Thi">
+                        <group>
+                            <field name="total_students" string="Tổng Sĩ Số"/>
+                            <field name="graded_count" string="Đã Chấm"/>
+                            <field name="average_score" string="ĐiểmTB"/>
+                        </group>
+                        <group>
+                            <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
+                            <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
+                            <field name="pass_rate" widget="progressbar" string="Tỷ Lệ Đạt"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Danh Sách Bài Thi Của Học Sinh">
+                        <page string="Danh Sách Số Báo Danh (SBD) &amp; Kết Quả Của Học Sinh">
                             <field name="session_ids" readonly="status == 'completed'">
                                 <list>
-                                    <field name="student_code" string="Mã Sinh Viên / Mã HS"/>
-                                    <field name="student_name" string="Họ Và Tên Học Sinh"/>
-                                    <field name="total_score" string="Điểm Đạt" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0"/>
-                                    <field name="correct_count" string="Số Đúng"/>
-                                    <field name="wrong_count" string="Số Sai"/>
-                                    <field name="percentage" widget="progressbar" string="Tỷ Lệ (%)"/>
-                                    <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                                    <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
-                                    <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
+                                    <field name="sbd" string="Số Báo Danh (6 Số)" class="fw-bold font-monospace text-primary"/>
+                                    <field name="student_code" string="Mã HS"/>
+                                    <field name="student_name" string="Họ Và Tên"/>
+                                    <field name="exam_code" string="Mã Đề (6 Số)"/>
+                                    <field name="total_score" string="Điểm" column_invisible="parent.status == 'draft'" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0 and status == 'Graded'"/>
+                                    <field name="correct_ratio" string="Số Câu Đúng" column_invisible="parent.status == 'draft'"/>
+                                    <field name="result_display" string="Kết Quả" widget="badge" column_invisible="parent.status == 'draft'" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
+                                    <field name="scan_status" widget="badge" column_invisible="parent.status != 'in_progress'" decoration-success="scan_status == 'success'" decoration-danger="scan_status == 'failed'" optional="show" string="Trạng Thái Quét"/>
+                                    <field name="status" widget="badge" column_invisible="parent.status != 'in_progress'" decoration-info="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
+                                    <button name="action_view_session_detail" string="Chi Tiết Bài Làm" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" invisible="parent.status == 'draft'" title="Bấm vào để xem chi tiết từng câu trả lời và ảnh phiếu OMR"/>
+                                    <button name="action_delete_session" string="Xóa" type="object" icon="fa-trash" class="btn-sm btn-outline-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này của học sinh"/>
                                 </list>
                             </field>
                         </page>
@@ -373,7 +451,8 @@
                                 <list>
                                     <field name="code"/>
                                     <field name="name"/>
-                                    <field name="date"/>
+                                    <field name="start_datetime"/>
+                                    <field name="end_datetime"/>
                                     <field name="total_students"/>
                                     <field name="passed_count"/>
                                     <field name="failed_count"/>
@@ -420,28 +499,27 @@
         <field name="search_view_id" ref="view_exam_batch_search"/>
     </record>
 
-    <!-- ==================== 3. LƯỢT LÀM BÀI (exam.session) ==================== -->
+    <!-- ==================== 3. CHI TIẾT BÀI THI CỦA HỌC SINH (exam.session) ==================== -->
     <record id="view_exam_session_list" model="ir.ui.view">
         <field name="name">exam.session.list</field>
         <field name="model">exam.session</field>
         <field name="arch" type="xml">
-            <list string="Danh Sách Lượt Làm Bài">
-                <field name="name"/>
+            <list string="Danh Sách Bài Thi Của Học Sinh" create="0" delete="0">
+                <field name="sbd" string="SBD (6 Số)" class="fw-bold font-monospace text-primary"/>
                 <field name="student_code" string="Mã HS"/>
-                <field name="student_name" string="Học Sinh"/>
-                <field name="batch_id" string="Đợt Kiểm Tra"/>
+                <field name="student_name" string="Họ Và Tên"/>
+                <field name="grade_id" string="Khối Lớp"/>
+                <field name="class_id" string="Lớp Lúc Thi"/>
+                <field name="batch_id" string="Đợt Thi"/>
                 <field name="exam_id" string="Đề Thi"/>
-                <field name="class_id" string="Lớp Học"/>
-                <field name="total_score" widget="float" string="Điểm" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0"/>
-                <field name="total_possible" widget="float"/>
-                <field name="percentage" widget="progressbar"/>
-                <field name="correct_count" string="Đúng"/>
-                <field name="wrong_count" string="Sai"/>
+                <field name="total_score" widget="float" string="Điểm" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0 and status == 'Graded'"/>
+                <field name="total_possible" widget="float" string="Tối Đa"/>
+                <field name="correct_ratio" string="Số Câu Đúng"/>
                 <field name="result_display" widget="badge" string="Kết Quả" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                <field name="start_time"/>
-                <field name="end_time"/>
-                <field name="status" widget="badge" decoration-warning="status == 'InProgress'" decoration-info="status == 'Submitted'" decoration-success="status == 'Graded'"/>
-                <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm"/>
+                <field name="end_time" string="Thời Gian Chấm"/>
+                <field name="status" widget="badge" decoration-info="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
+                <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem chi tiết bài làm"/>
+                <button name="action_delete_session" string="Xóa" type="object" icon="fa-trash" class="text-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này"/>
             </list>
         </field>
     </record>
@@ -450,80 +528,97 @@
         <field name="name">exam.session.form</field>
         <field name="model">exam.session</field>
         <field name="arch" type="xml">
-            <form string="Lượt Làm Bài Của Học Sinh">
+            <form string="Chi Tiết Bài Kiểm Tra Của Học Sinh" create="0">
                 <header>
-                    <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="oe_highlight btn-success" invisible="status != 'NotStarted'"/>
-                    <button name="action_submit_exam" string="Nộp Bài &amp; Tự Động Chấm Điểm" type="object" class="oe_highlight btn-primary" invisible="status != 'InProgress'"/>
-                    <field name="status" widget="statusbar" statusbar_visible="NotStarted,InProgress,Graded"/>
+                    <button name="action_delete_session" 
+                            string="🗑️ Xóa Bài Kiểm Tra" 
+                            type="object" 
+                            class="btn-outline-danger" 
+                            confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?"/>
+                    <field name="status" widget="statusbar" statusbar_visible="NotStarted,Graded"/>
                 </header>
                 <sheet>
-                    <!-- Banner 1: Chưa bắt đầu -->
-                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'NotStarted'">
+                    <!-- Banner khi chưa có điểm -->
+                    <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status == 'Graded'">
                         <div>
-                            <i class="fa fa-info-circle fa-2x me-2 align-middle text-primary"/>
-                            <span class="fs-5 align-middle">Thời gian làm bài: <strong><field name="time_limit_minutes" readonly="1"/> phút</strong>. Vui lòng bấm <strong>"Bắt Đầu Làm Bài"</strong> để tính giờ và làm bài.</span>
-                        </div>
-                        <button name="action_start_exam" string="Bắt Đầu Làm Bài" type="object" class="btn btn-success btn-lg ms-3"/>
-                    </div>
-
-                    <!-- Banner 2: Đang làm bài kèm đồng hồ đếm ngược -->
-                    <div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'InProgress'">
-                        <div>
-                            <i class="fa fa-pencil-square-o fa-2x me-2 align-middle text-warning"/>
-                            <span class="fs-5 align-middle fw-semibold">Đang trong thời gian làm bài thi. Hãy tập trung trả lời các câu hỏi bên dưới!</span>
-                        </div>
-                        <div>
-                            <field name="deadline" widget="exam_countdown_timer" readonly="1"/>
+                            <i class="fa fa-info-circle fa-2x me-2 align-middle text-primary" title="Thông tin"/>
+                            <span class="fs-6 align-middle">Học sinh đã được cấp <strong>Số Báo Danh (SBD 6 số): <field name="sbd" readonly="1" class="d-inline fw-bold font-monospace"/></strong>. Điểm số sẽ được cập nhật tự động khi Giáo viên tải file nén <strong>.RAR</strong> của đợt kiểm tra lên hệ thống.</span>
                         </div>
                     </div>
 
-                    <!-- Banner 3: Đã hoàn thành -->
+                    <!-- Banner khi đã chấm điểm -->
                     <div class="alert alert-success d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" role="status" invisible="status != 'Graded'">
                         <div>
-                            <i class="fa fa-check-circle fa-2x me-2 align-middle text-success"/>
-                            <span class="fs-5 align-middle fw-semibold">Bài thi đã hoàn thành và chấm điểm! Điểm số: <strong><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/> (<field name="percentage" readonly="1"/>%)</strong></span>
+                            <i class="fa fa-check-circle fa-2x me-2 align-middle text-success" title="Đã chấm"/>
+                            <span class="fs-5 align-middle fw-semibold">Bài thi đã được chấm tự động qua file .RAR! Điểm số: <strong><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/> (<field name="correct_ratio" readonly="1"/>)</strong> - Đánh giá: <strong><field name="result_display" readonly="1"/></strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ thống kê chi tiết Số câu Đúng / Sai -->
+                    <div class="row g-3 mb-3" invisible="status != 'Graded'">
+                        <div class="col-md-3">
+                            <div class="p-3 border rounded-3 text-center bg-light">
+                                <span class="text-muted d-block small fw-bold text-uppercase">Điểm Đạt Được</span>
+                                <span class="fs-2 fw-bold text-primary"><field name="total_score" readonly="1"/> / <field name="total_possible" readonly="1"/></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border rounded-3 text-center" style="background-color: #ecfdf5; border-color: #a7f3d0 !important;">
+                                <span class="text-success d-block small fw-bold text-uppercase"><i class="fa fa-check-circle me-1" title="Đúng"/> Số Câu Đúng</span>
+                                <span class="fs-2 fw-bold text-success"><field name="correct_count" readonly="1"/> câu</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border rounded-3 text-center" style="background-color: #fef2f2; border-color: #fecaca !important;">
+                                <span class="text-danger d-block small fw-bold text-uppercase"><i class="fa fa-times-circle me-1" title="Sai"/> Số Câu Sai</span>
+                                <span class="fs-2 fw-bold text-danger"><field name="wrong_count" readonly="1"/> câu</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 border rounded-3 text-center bg-light">
+                                <span class="text-muted d-block small fw-bold text-uppercase">Tỷ Lệ Đúng</span>
+                                <span class="fs-2 fw-bold text-dark"><field name="correct_ratio" readonly="1"/></span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="oe_title">
                         <label for="name" string="Mã Phiên Thi"/>
-                        <h1><field name="name" readonly="1" placeholder="Tự động sinh khi chọn học sinh và đề thi..."/></h1>
+                        <h1><field name="name" readonly="1"/></h1>
                     </div>
                     <group>
-                        <group string="Thông Tin Học Sinh &amp; Đề Thi">
-                            <field name="batch_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
-                            <field name="student_id" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
+                        <group string="Thông Tin Học Sinh, SBD &amp; Đề Thi">
+                            <field name="sbd" string="Số Báo Danh (6 Chữ Số)" class="fw-bold font-monospace text-primary" readonly="status == 'Graded'"/>
+                            <field name="student_id" readonly="1"/>
                             <field name="student_code" readonly="1"/>
-                            <field name="exam_id" domain="[('status', '=', 'active')]" readonly="status in ('InProgress', 'Submitted', 'Graded')"/>
-                            <field name="class_id" readonly="1"/>
-                            <field name="time_limit_minutes" readonly="1"/>
-                            <field name="auto_analyze"/>
+                            <field name="grade_id" readonly="1"/>
+                            <field name="class_id" string="Lớp Lúc Thi" readonly="1"/>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="exam_id" readonly="1"/>
                         </group>
-                        <group string="Thời Gian &amp; Kết Quả">
-                            <field name="start_time" readonly="1"/>
-                            <field name="deadline" readonly="1"/>
-                            <field name="end_time" readonly="1"/>
+                        <group string="Kết Quả Bài Làm">
                             <field name="total_possible" readonly="1"/>
                             <field name="total_score" readonly="1" invisible="status != 'Graded'"/>
-                            <field name="percentage" widget="progressbar" invisible="status != 'Graded'"/>
-                            <field name="correct_count" readonly="1" invisible="status != 'Graded'"/>
-                            <field name="wrong_count" readonly="1" invisible="status != 'Graded'"/>
+                            <field name="correct_ratio" readonly="1" invisible="status != 'Graded'"/>
                             <field name="result_display" widget="badge" readonly="1" invisible="status != 'Graded'" decoration-success="passed == True" decoration-danger="passed == False"/>
+                            <field name="end_time" readonly="1" invisible="status != 'Graded'"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Bộ Câu Hỏi &amp; Bài Làm">
-                            <!-- Khóa create="0" delete="0": Học sinh không tự ý thêm bớt câu hỏi mà làm đúng các câu hỏi của đề thi -->
-                            <!-- readonly="status in ('NotStarted', 'Submitted', 'Graded')": Chỉ mở khi đang trong giờ làm bài -->
-                            <field name="answer_ids" readonly="status in ('NotStarted', 'Submitted', 'Graded')">
-                                <list editable="bottom" create="0" delete="0">
-                                    <field name="question_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                        <page string="Bộ Câu Hỏi &amp; Bài Làm Chi Tiết">
+                            <field name="answer_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="question_id" string="Câu" readonly="1" force_save="1" options="{'no_open': True}"/>
                                     <field name="question_content" string="Nội Dung Câu Hỏi" readonly="1"/>
-                                    <field name="question_type" string="Dạng Câu" readonly="1"/>
-                                    <field name="question_points" string="Thang Điểm" readonly="1"/>
-                                    <field name="answer_given" placeholder="Nhập đáp án tại đây..."/>
-                                    <field name="is_correct" widget="boolean_toggle" readonly="1" column_invisible="parent.status != 'Graded'"/>
+                                    <field name="option_a" string="A" readonly="1"/>
+                                    <field name="option_b" string="B" readonly="1"/>
+                                    <field name="option_c" string="C" readonly="1"/>
+                                    <field name="option_d" string="D" readonly="1"/>
+                                    <field name="answer_given" string="HS Chọn" widget="badge" readonly="1"/>
+                                    <field name="correct_answer" string="Đáp Án Đúng" widget="badge" decoration-success="True" readonly="1"/>
+                                    <field name="result_text" string="Đánh Giá" widget="badge" decoration-success="is_correct == True" decoration-danger="is_correct == False" column_invisible="parent.status != 'Graded'"/>
                                     <field name="points_earned" string="Điểm Đạt" readonly="1" column_invisible="parent.status != 'Graded'"/>
+                                    <field name="question_points" string="Thang Điểm" readonly="1"/>
                                 </list>
                             </field>
                         </page>
@@ -537,6 +632,31 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="📸 Ảnh Phiếu Trắc Nghiệm Đã Quét Từ File .RAR">
+                            <div class="row g-3 p-2">
+                                <div class="col-md-6 border-end pe-3">
+                                    <h6 class="fw-bold text-primary mb-2"><i class="fa fa-image me-1" title="Ảnh"/> Ảnh Phiếu OMR Giải Nén Từ File .RAR:</h6>
+                                    <div class="p-2 border rounded bg-light text-center mb-2">
+                                        <field name="scanned_image" widget="image" class="oe_avatar" style="width: 100%; max-width: 450px; height: auto;" readonly="1"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 ps-3">
+                                    <h6 class="fw-bold text-primary mb-2"><i class="fa fa-check-square-o me-1" title="OMR"/> Kết Quả Nhận Diện OMR (SBD 6 Số &amp; Mã Đề 6 Số):</h6>
+                                    <group>
+                                        <field name="scan_status" widget="badge" decoration-success="scan_status == 'success'" decoration-danger="scan_status == 'failed'"/>
+                                        <field name="scan_engine" readonly="1"/>
+                                        <field name="detected_student_code" string="SBD Đọc Từ Phiếu (6 Số)" readonly="1"/>
+                                        <field name="detected_exam_code" string="Mã Đề Đọc Từ Phiếu (6 Số)" readonly="1"/>
+                                        <field name="scan_date" readonly="1"/>
+                                        <field name="scanned_image_filename" readonly="1"/>
+                                    </group>
+                                    <div class="mt-2">
+                                        <label for="ocr_detected_answers" class="fw-bold small text-muted d-block mb-1">Dữ Liệu Thô (JSON Kết Quả Nhận Diện OMR):</label>
+                                        <field name="ocr_detected_answers" readonly="1" class="font-monospace small"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
@@ -547,15 +667,18 @@
         <field name="name">exam.session.search</field>
         <field name="model">exam.session</field>
         <field name="arch" type="xml">
-            <search string="Tìm Kiếm Lượt Thi">
+            <search string="Tìm Kiếm Bài Thi Học Sinh">
+                <field name="sbd" string="Số Báo Danh (6 Số)"/>
                 <field name="student_id"/>
                 <field name="exam_id"/>
                 <field name="class_id"/>
-                <filter string="Đang Làm Bài" name="filter_in_progress" domain="[('status', '=', 'InProgress')]"/>
+                <field name="grade_id"/>
                 <filter string="Đã Chấm Điểm" name="filter_graded" domain="[('status', '=', 'Graded')]"/>
                 <group>
+                    <filter string="Khối Lớp" name="group_grade" domain="[]" context="{'group_by': 'grade_id'}"/>
+                    <filter string="Lớp Lúc Thi" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
+                    <filter string="Đợt Kiểm Tra" name="group_batch" domain="[]" context="{'group_by': 'batch_id'}"/>
                     <filter string="Đề Thi" name="group_exam" domain="[]" context="{'group_by': 'exam_id'}"/>
-                    <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
                     <filter string="Học Sinh" name="group_student" domain="[]" context="{'group_by': 'student_id'}"/>
                     <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
                 </group>
@@ -564,7 +687,7 @@
     </record>
 
     <record id="action_exam_session" model="ir.actions.act_window">
-        <field name="name">Lượt Làm Bài</field>
+        <field name="name">Chi Tiết Bài Thi Học Sinh</field>
         <field name="res_model">exam.session</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_exam_session_list"/>
@@ -596,34 +719,35 @@
         </field>
     </record>
 
-    <!-- ==================== 5. WIZARD IMPORT BÀI LÀM THI OFF TỪ EXCEL ==================== -->
-    <record id="view_exam_batch_offline_import_wizard_form" model="ir.ui.view">
-        <field name="name">exam.batch.offline.import.wizard.form</field>
-        <field name="model">exam.batch.offline.import.wizard</field>
+    <!-- ==================== 5. WIZARD GIẢI NÉN FILE .RAR & CHẤM BÀI HÀNG LOẠT (exam.batch.scan.wizard) ==================== -->
+    <record id="view_exam_batch_scan_wizard_form" model="ir.ui.view">
+        <field name="name">exam.batch.scan.wizard.form</field>
+        <field name="model">exam.batch.scan.wizard</field>
         <field name="arch" type="xml">
-            <form string="Import Bài Làm Thi Offline Từ Excel">
+            <form string="Chấm Bài Hàng Loạt Qua Tệp Nén (.RAR / .ZIP)">
                 <sheet>
                     <field name="state" invisible="1"/>
                     <div invisible="state != 'draft'">
-                        <div class="alert alert-info d-flex align-items-center justify-content-between p-3 mb-3" role="status">
+                        <div class="alert alert-info p-3 mb-3" role="status">
                             <div>
-                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-info-circle me-1"/> Quy Trình Nhập Bài Làm Thi Offline:</h6>
-                                <ol class="mb-0 ps-3 small">
-                                    <li>Mở đợt kiểm tra và bấm <strong>"📄 Tải Phiếu Nhập Bài Làm Excel"</strong> để nhận file mẫu đã điền sẵn danh sách học sinh và các cột câu hỏi.</li>
-                                    <li>Nhập đáp án của từng học sinh vào các cột câu hỏi tương ứng.</li>
-                                    <li>Tải file Excel đó lên biểu mẫu này và bấm <strong>"Bắt Đầu Chấm Điểm &amp; Phân Tích AI"</strong>.</li>
-                                </ol>
+                                <h6 class="fw-bold mb-1 text-primary"><i class="fa fa-file-archive-o me-1" title="RAR"/> Chấm Điểm Hàng Loạt Bằng Tệp Nén Hình Ảnh (.RAR / .ZIP):</h6>
+                                <ul class="mb-0 ps-3 small">
+                                    <li>Nén toàn bộ hình ảnh phiếu trả lời trắc nghiệm OMR 50 câu (<code>.png, .jpg, .jpeg, .webp</code>) của học sinh trong lớp vào một tệp <strong>.RAR</strong> (hoặc <strong>.ZIP</strong>).</li>
+                                    <li>Hệ thống sẽ tự động <strong>giải nén tệp .RAR</strong> và phân tích từng ảnh phiếu bài thi:</li>
+                                    <li>Quét mục <strong>"7. Số báo danh" (6 chữ số đã tô đen)</strong> để gán đúng học sinh trong đợt kiểm tra.</li>
+                                    <li>Quét mục <strong>"8. Mã đề thi" (6 chữ số đã tô đen)</strong> và <strong>50 câu trả lời (A, B, C, D đã tô đen)</strong> để tính điểm và lưu trực tiếp vào hồ sơ từng học sinh.</li>
+                                </ul>
                             </div>
                         </div>
-
                         <group>
-                            <group string="Đợt Kiểm Tra &amp; Tệp Dữ Liệu">
+                            <group string="Thông Tin Đợt Kiểm Tra">
                                 <field name="batch_id" readonly="1" options="{'no_open': True}"/>
-                                <field name="excel_file" filename="filename" widget="binary"/>
-                                <field name="filename" invisible="1"/>
+                                <field name="expected_exam_code" string="Mã Đề Chuẩn Của Đợt (6 Số)" readonly="1"/>
+                                <field name="scan_mode"/>
                             </group>
-                            <group string="Cấu Hình Chấm Điểm">
-                                <field name="auto_analyze"/>
+                            <group string="Tải Lên Tệp Nén Bài Thi (.RAR / .ZIP)">
+                                <field name="archive_file" filename="filename" widget="binary"/>
+                                <field name="filename" invisible="1"/>
                             </group>
                         </group>
                     </div>
@@ -633,31 +757,205 @@
                     </div>
                 </sheet>
                 <footer>
-                    <button name="action_import_offline_results" 
-                            string="🚀 Bắt Đầu Chấm Điểm &amp; Phân Tích AI" 
+                    <button name="action_scan_and_grade" 
+                            string="🚀 Giải Nén File .RAR &amp; Chấm Toàn Bộ Bài Thi" 
                             type="object" 
                             class="btn-primary" 
                             invisible="state != 'draft'"/>
                     <button name="action_reset" 
-                            string="🔄 Tải Lên Tệp Khác" 
+                            string="🔄 Tải Lên File .RAR Khác" 
                             type="object" 
                             class="btn-secondary" 
                             invisible="state != 'done'"/>
-                    <button name="action_view_batch" 
-                            string="📂 Xem Đợt Kiểm Tra" 
-                            type="object" 
-                            class="btn-primary" 
-                            invisible="state != 'done'"/>
-                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                    <button string="Hoàn Tất / Đóng" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
-    <record id="action_exam_batch_offline_import_wizard" model="ir.actions.act_window">
-        <field name="name">Import Bài Làm Thi Offline</field>
-        <field name="res_model">exam.batch.offline.import.wizard</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
+    <!-- ==================== WIZARD THÊM PHÉP TÍNH TRỰC TIẾP TRÊN ODOO ==================== -->
+    <record id="view_exam_add_calculation_wizard_form" model="ir.ui.view">
+        <field name="name">exam.add.calculation.wizard.form</field>
+        <field name="model">exam.add.calculation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Thêm Phép Tính Trực Tiếp Trên Odoo">
+                <sheet>
+                    <div class="alert alert-info py-2" role="status">
+                        <i class="fa fa-info-circle me-1" title="Thông báo"/>
+                        Nhập hai số, biểu thức hoặc phương trình tìm x, hệ thống sẽ tự động tính kết quả và tạo 4 phương án trắc nghiệm (A, B, C, D) vào ngân hàng câu hỏi.
+                    </div>
+                    <group>
+                        <field name="exam_id" readonly="1" invisible="not exam_id"/>
+                        <field name="calc_mode" widget="radio" options="{'horizontal': true}"/>
+                    </group>
+                    <group string="Nhập Phép Tính 2 Số" invisible="calc_mode not in ('two_nums', 'find_x')">
+                        <group>
+                            <field name="num1"/>
+                            <field name="operation"/>
+                        </group>
+                        <group>
+                            <field name="num2"/>
+                            <field name="result_val" string="Giá Trị Đúng (x hoặc Kết Quả)"/>
+                        </group>
+                    </group>
+                    <group string="Nhập Biểu Thức Tùy Ý" invisible="calc_mode != 'custom'">
+                        <field name="custom_expression" placeholder="Ví dụ: 125 + 45 - 20 hoặc 35 * 2 + 10"/>
+                        <field name="result_val" string="Kết Quả Tính Toán"/>
+                    </group>
+                    <group string="Nội Dung Đề Bài (Tự động hoặc sửa tùy ý)">
+                        <field name="question_text" nolabel="1"/>
+                    </group>
+                    <group string="4 Phương Án Trắc Nghiệm Tự Động (A, B, C, D)">
+                        <group>
+                            <field name="option_a"/>
+                            <field name="option_b"/>
+                        </group>
+                        <group>
+                            <field name="option_c"/>
+                            <field name="option_d"/>
+                        </group>
+                    </group>
+                    <group string="Cấu Hình Điểm, Khối Lớp &amp; Chủ Đề Toán">
+                        <group>
+                            <field name="grade_id" placeholder="Chọn Khối Lớp (VD: Khối Lớp 3)..."/>
+                            <field name="correct_answer" widget="radio" options="{'horizontal': true}"/>
+                            <field name="topic"/>
+                        </group>
+                        <group>
+                            <field name="difficulty"/>
+                            <field name="points"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_add_to_exam" string="➕ Thêm Vào &amp; Đóng" type="object" class="btn-primary"/>
+                    <button name="action_add_and_continue" string="➕ Thêm &amp; Tiếp Tục Thêm Phép Khác" type="object" class="btn-success"/>
+                    <button string="Hủy Bỏ" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_exam_batch_finish_wizard_form" model="ir.ui.view">
+        <field name="name">exam.batch.finish.wizard.form</field>
+        <field name="model">exam.batch.finish.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cảnh Báo Chưa Chấm Xong">
+                <sheet>
+                    <field name="batch_id" invisible="1"/>
+                    <field name="total_count" invisible="1"/>
+                    <field name="graded_count" invisible="1"/>
+                    <field name="ungraded_count" invisible="1"/>
+                    <div class="alert alert-warning d-flex align-items-center p-3 mb-3" role="alert">
+                        <i class="fa fa-exclamation-triangle fa-2x text-warning me-3" title="Cảnh báo"/>
+                        <div>
+                            <h5 class="alert-heading fw-bold mb-1">Cảnh Báo: Còn Học Sinh Chưa Được Chấm Điểm!</h5>
+                            <p class="mb-0">
+                                Hiện tại có <strong class="text-danger"><field name="ungraded_count" readonly="1"/></strong> học sinh 
+                                chưa được chấm điểm trên tổng số <strong><field name="total_count" readonly="1"/></strong> học sinh.
+                            </p>
+                            <p class="small text-muted mb-0 mt-1">
+                                Nếu hoàn tất ngay, những học sinh chưa có điểm sẽ được ghi nhận là chưa tham gia hoặc chưa hoàn thành bài thi.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-light rounded border my-3">
+                        <div class="form-check fs-6">
+                            <field name="confirm_finished" class="form-check-input me-2"/>
+                            <label for="confirm_finished" class="form-check-label fw-bold text-dark">
+                                Tôi chắc chắn đã chấm xong cho đợt kiểm tra này
+                            </label>
+                        </div>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_finish" string="✔ Xác Nhận Hoàn Tất" type="object" class="btn-danger"/>
+                    <button string="Quay Lại Chấm Tiếp" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== WIZARD THÔNG BÁO TÔ SAI MÃ ĐỀ ==================== -->
+    <record id="view_exam_code_error_wizard_form" model="ir.ui.view">
+        <field name="name">exam.code.error.wizard.form</field>
+        <field name="model">exam.code.error.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Tô Sai Mã Đề">
+                <sheet>
+                    <field name="session_id" invisible="1"/>
+                    <field name="batch_id" invisible="1"/>
+                    
+                    <!-- Banner cảnh báo đỏ nổi bật -->
+                    <div style="background-color: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;" class="d-flex align-items-center">
+                        <i class="fa fa-exclamation-triangle fa-2x me-3" style="color: #e11d48;" title="Cảnh báo tô sai mã đề"/>
+                        <div>
+                            <h5 style="color: #9f1239; font-weight: 800; margin-bottom: 3px;">CẢNH BÁO: HỌC SINH TÔ SAI MÃ ĐỀ THI!</h5>
+                            <p style="color: #4c0519; margin: 0; font-size: 13.5px; line-height: 1.4;">
+                                Mã đề nhận diện trên phiếu bài làm không trùng khớp với mã đề thi hệ thống đang gán cho lớp và học sinh này.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Hai khối so sánh Mã Đề: Xanh (Đúng) vs Đỏ (Sai) với độ tương phản cực cao, chữ rõ nét -->
+                    <div class="row text-center g-3 my-2">
+                        <!-- Ô XANH: Mã đề được gán (Đúng) -->
+                        <div class="col-6">
+                            <div style="background-color: #ecfdf5; border: 2.5px solid #10b981; border-radius: 10px; padding: 16px 14px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);">
+                                <div style="color: #065f46; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                    <i class="fa fa-check-circle me-1" style="color: #059669; font-size: 15px;" title="Đúng"/> MÃ ĐỀ ĐƯỢC GÁN (ĐÚNG)
+                                </div>
+                                <div style="font-size: 34px; font-weight: 800; color: #047857; font-family: 'Consolas', 'Courier New', monospace; letter-spacing: 3px; line-height: 1.2; margin: 4px 0;">
+                                    <field name="expected_exam_code" readonly="1"/>
+                                </div>
+                                <div style="color: #065f46; font-size: 12.5px; font-weight: 600; margin-top: 6px; line-height: 1.3;">
+                                    <field name="exam_name" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ô ĐỎ: Mã đề nhận diện trên phiếu (Sai) -->
+                        <div class="col-6">
+                            <div style="background-color: #fef2f2; border: 2.5px solid #ef4444; border-radius: 10px; padding: 16px 14px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12);">
+                                <div style="color: #991b1b; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                    <i class="fa fa-times-circle me-1" style="color: #dc2626; font-size: 15px;" title="Sai"/> MÃ ĐỀ NHẬN DIỆN TRÊN PHIẾU
+                                </div>
+                                <div style="font-size: 34px; font-weight: 800; color: #b91c1c; font-family: 'Consolas', 'Courier New', monospace; letter-spacing: 3px; line-height: 1.2; margin: 4px 0;">
+                                    <field name="detected_exam_code" readonly="1"/>
+                                </div>
+                                <div style="color: #991b1b; font-size: 12.5px; font-weight: 600; margin-top: 6px; line-height: 1.3;">
+                                    <i class="fa fa-barcode me-1"/> Đọc từ mục "8. Mã đề thi"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ Thông Tin Thí Sinh & Hướng Dẫn Xử Lý -->
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-top: 16px; margin-bottom: 8px;">
+                        <div style="color: #334155; font-size: 13px; font-weight: 700; margin-bottom: 8px;">
+                            <i class="fa fa-user me-1" style="color: #475569;" title="Thí sinh"/> THÔNG TIN THÍ SINH &amp; ĐỢT KIỂM TRA:
+                        </div>
+                        <div class="row g-2" style="font-size: 13px;">
+                            <div class="col-7">
+                                <span style="color: #64748b;">Học sinh:</span>
+                                <strong style="color: #0f172a; margin-left: 4px;"><field name="student_name" readonly="1" class="d-inline"/></strong>
+                                <span style="background-color: #e2e8f0; color: #334155; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 12px; margin-left: 6px;"><field name="student_code" readonly="1" class="d-inline"/></span>
+                            </div>
+                            <div class="col-5">
+                                <span style="color: #64748b;">Lớp học:</span>
+                                <strong style="color: #0f172a; margin-left: 4px;"><field name="class_name" readonly="1" class="d-inline"/></strong>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; font-size: 12px; color: #475569; line-height: 1.4;">
+                            <i class="fa fa-info-circle me-1" style="color: #0284c7;" title="Hướng dẫn"/> 
+                            <strong>Hướng dẫn xử lý:</strong> Hệ thống tạm ngừng chấm điểm bài thi này để tránh sai lệch điểm số. Giáo viên vui lòng kiểm tra lại phần tô ô tròn tại Mục "8. Mã đề thi" trên phiếu bài làm của học sinh hoặc đối chiếu lại mã đề được phân công.
+                        </div>
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Đóng &amp; Kiểm Tra Lại" class="btn btn-danger px-4 py-2 fw-bold" special="cancel"/>
+                </footer>
+            </form>
+        </field>
     </record>
 </odoo>

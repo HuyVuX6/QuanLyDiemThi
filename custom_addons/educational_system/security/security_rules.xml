@@ -1,69 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        <!-- 1. RECORD RULES CHO EXAM.SESSION -->
-        <record id="rule_exam_session_student" model="ir.rule">
-            <field name="name">Lượt làm bài: Học sinh xem và làm bài của chính mình</field>
-            <field name="model_id" ref="model_exam_session"/>
-            <field name="domain_force">['|', ('student_id.user_id', '=', user.id), ('student_id.user_id', '=', False)]</field>
-            <field name="groups" eval="[(4, ref('group_school_student'))]"/>
+    <data noupdate="0">
+        <!-- ==================== 1. RECORD RULES CHO LỚP HỌC (SCHOOL.CLASS) ==================== -->
+        <record id="rule_school_class_teacher" model="ir.rule">
+            <field name="name">Lớp học: Giáo viên quản lý lớp mình đang dạy</field>
+            <field name="model_id" ref="model_school_class"/>
+            <field name="domain_force">['|', ('teacher_id.user_id', '=', user.id), ('teacher_id.user_id', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_school_teacher'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="False"/>
-        </record>
-
-        <record id="rule_exam_session_teacher_manager" model="ir.rule">
-            <field name="name">Lượt làm bài: Giáo viên và Quản trị viên xem tất cả</field>
-            <field name="model_id" ref="model_exam_session"/>
-            <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('group_school_teacher')), (4, ref('group_school_manager'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-        </record>
-
-        <!-- 2. RECORD RULES CHO EXAM.ANSWER -->
-        <record id="rule_exam_answer_student" model="ir.rule">
-            <field name="name">Đáp án bài thi: Học sinh tương tác bài làm của mình</field>
-            <field name="model_id" ref="model_exam_answer"/>
-            <field name="domain_force">['|', ('session_id.student_id.user_id', '=', user.id), ('session_id.student_id.user_id', '=', False)]</field>
-            <field name="groups" eval="[(4, ref('group_school_student'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="False"/>
-        </record>
-
-        <record id="rule_exam_answer_teacher_manager" model="ir.rule">
-            <field name="name">Đáp án bài thi: Giáo viên và Quản lý truy cập tất cả</field>
-            <field name="model_id" ref="model_exam_answer"/>
-            <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('group_school_teacher')), (4, ref('group_school_manager'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-        </record>
-
-        <!-- 3. RECORD RULES CHO AI.ANALYSIS -->
-        <record id="rule_ai_analysis_student" model="ir.rule">
-            <field name="name">Phân tích AI: Học sinh chỉ xem kết quả của chính mình</field>
-            <field name="model_id" ref="model_ai_analysis"/>
-            <field name="domain_force">['|', ('student_id.user_id', '=', user.id), ('student_id.user_id', '=', False)]</field>
-            <field name="groups" eval="[(4, ref('group_school_student'))]"/>
-            <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="False"/>
             <field name="perm_create" eval="False"/>
             <field name="perm_unlink" eval="False"/>
         </record>
 
+        <record id="rule_school_class_manager" model="ir.rule">
+            <field name="name">Lớp học: Quản trị viên kiểm soát toàn bộ các lớp trong trường</field>
+            <field name="model_id" ref="model_school_class"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_school_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ==================== 2. RECORD RULES CHO ĐỢT KIỂM TRA (EXAM.BATCH) ==================== -->
+        <record id="rule_exam_batch_teacher_manager" model="ir.rule">
+            <field name="name">Đợt kiểm tra: Giáo viên quản lý đợt thi của lớp mình dạy</field>
+            <field name="model_id" ref="model_exam_batch"/>
+            <field name="domain_force">['|', ('class_id.teacher_id.user_id', '=', user.id), ('class_id.teacher_id.user_id', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_school_teacher'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_exam_batch_admin" model="ir.rule">
+            <field name="name">Đợt kiểm tra: Quản trị viên quan sát và kiểm soát toàn trường</field>
+            <field name="model_id" ref="model_exam_batch"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_school_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ==================== 3. RECORD RULES CHO LƯỢT LÀM BÀI / KẾT QUẢ THI (EXAM.SESSION) ==================== -->
+        <record id="rule_exam_session_teacher_manager" model="ir.rule">
+            <field name="name">Bài thi học sinh: Giáo viên quản lý bài thi thuộc lớp mình dạy</field>
+            <field name="model_id" ref="model_exam_session"/>
+            <field name="domain_force">['|', ('class_id.teacher_id.user_id', '=', user.id), ('class_id.teacher_id.user_id', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_school_teacher'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_exam_session_admin" model="ir.rule">
+            <field name="name">Bài thi học sinh: Quản trị viên quan sát toàn trường</field>
+            <field name="model_id" ref="model_exam_session"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_school_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ==================== 4. RECORD RULES CHO CHI TIẾT ĐÁP ÁN (EXAM.ANSWER) ==================== -->
+        <record id="rule_exam_answer_teacher_manager" model="ir.rule">
+            <field name="name">Đáp án bài thi: Giáo viên quản lý chi tiết bài làm thuộc lớp mình dạy</field>
+            <field name="model_id" ref="model_exam_answer"/>
+            <field name="domain_force">['|', ('session_id.class_id.teacher_id.user_id', '=', user.id), ('session_id.class_id.teacher_id.user_id', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_school_teacher'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_exam_answer_admin" model="ir.rule">
+            <field name="name">Đáp án bài thi: Quản trị viên toàn quyền kiểm soát</field>
+            <field name="model_id" ref="model_exam_answer"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_school_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- ==================== 5. RECORD RULES CHO PHÂN TÍCH AI (AI.ANALYSIS) ==================== -->
         <record id="rule_ai_analysis_teacher_manager" model="ir.rule">
-            <field name="name">Phân tích AI: Giáo viên và Quản lý toàn quyền xem và tạo</field>
+            <field name="name">Phân tích AI: Giáo viên xem và tạo phân tích cho lớp mình dạy</field>
+            <field name="model_id" ref="model_ai_analysis"/>
+            <field name="domain_force">['|', ('class_id.teacher_id.user_id', '=', user.id), ('class_id.teacher_id.user_id', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_school_teacher'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_ai_analysis_admin" model="ir.rule">
+            <field name="name">Phân tích AI: Quản trị viên quan sát toàn trường</field>
             <field name="model_id" ref="model_ai_analysis"/>
             <field name="domain_force">[(1, '=', 1)]</field>
-            <field name="groups" eval="[(4, ref('group_school_teacher')), (4, ref('group_school_manager'))]"/>
+            <field name="groups" eval="[(4, ref('group_school_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>

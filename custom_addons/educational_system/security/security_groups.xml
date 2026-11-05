@@ -6,23 +6,16 @@
         <field name="sequence">25</field>
     </record>
 
-    <!-- 1. Nhóm Học Sinh / Phụ Huynh -->
-    <record id="group_school_student" model="res.groups">
-        <field name="name">Học Sinh</field>
+    <!-- 1. Nhóm Giáo Viên / Trợ Giảng (Quản lý lớp học và bài thi của lớp mình đang dạy) -->
+    <record id="group_school_teacher" model="res.groups">
+        <field name="name">Giáo Viên Phụ Trách Lớp</field>
         <field name="privilege_id" ref="res_groups_privilege_education"/>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
-    <!-- 2. Nhóm Giáo Viên / Trợ Giảng -->
-    <record id="group_school_teacher" model="res.groups">
-        <field name="name">Giáo Viên / Trợ Giảng</field>
-        <field name="privilege_id" ref="res_groups_privilege_education"/>
-        <field name="implied_ids" eval="[(4, ref('group_school_student'))]"/>
-    </record>
-
-    <!-- 3. Nhóm Quản Trị Viên / Ban Giám Hiệu -->
+    <!-- 2. Nhóm Quản Trị Viên / Ban Giám Hiệu (Kiểm soát và quan sát toàn bộ hoạt động trong trường) -->
     <record id="group_school_manager" model="res.groups">
-        <field name="name">Quản Trị Viên Giáo Dục</field>
+        <field name="name">Quản Trị Viên Trường Học (Admin)</field>
         <field name="privilege_id" ref="res_groups_privilege_education"/>
         <field name="implied_ids" eval="[(4, ref('group_school_teacher'))]"/>
         <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>

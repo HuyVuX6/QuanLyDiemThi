@@ -1,67 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ==================== 1. DANH SÁCH PHÂN TÍCH AI (ai.analysis) ==================== -->
+    <!-- ==================== 1. DANH SÁCH BÁO CÁO PHÂN TÍCH AI (ai.analysis) ==================== -->
     <record id="view_ai_analysis_list" model="ir.ui.view">
         <field name="name">ai.analysis.list</field>
         <field name="model">ai.analysis</field>
         <field name="arch" type="xml">
             <list string="Danh Sách Kết Quả Phân Tích AI">
-                <field name="name"/>
-                <field name="student_id"/>
-                <field name="session_id"/>
-                <field name="analysis_date"/>
-                <field name="ai_model_version"/>
-                <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status in ('pending', 'processing')" decoration-danger="status == 'failed'"/>
+                <field name="student_code" string="Mã HS" optional="show" class="fw-bold text-muted"/>
+                <field name="student_id" string="Học Sinh" class="fw-bold"/>
+                <field name="class_id" string="Lớp Học"/>
+                <field name="batch_id" string="Đợt Kiểm Tra"/>
+                <field name="exam_id" string="Đề Thi"/>
+                <field name="correct_ratio" string="Số Câu Đúng" optional="show"/>
+                <field name="total_score" string="Điểm Số" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0" class="fw-bold"/>
+                <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False"/>
+                <field name="ai_model_display" string="Mô Hình AI" widget="badge" decoration-info="True"/>
+                <field name="analysis_date" string="Thời Gian Phân Tích"/>
+                <field name="status" string="Trạng Thái AI" widget="badge" decoration-success="status == 'completed'" decoration-warning="status in ('pending', 'processing')" decoration-danger="status == 'failed'"/>
+                <field name="name" string="Tiêu Đề Báo Cáo" optional="hide"/>
+                <field name="passed" column_invisible="1"/>
             </list>
         </field>
     </record>
 
+    <!-- ==================== 2. FORM VIEW BÁO CÁO PHÂN TÍCH AI CHI TIẾT ==================== -->
     <record id="view_ai_analysis_form" model="ir.ui.view">
         <field name="name">ai.analysis.form</field>
         <field name="model">ai.analysis</field>
         <field name="arch" type="xml">
-            <form string="Báo Cáo Phân Tích AI">
+            <form string="Báo Cáo Phân Tích Sư Phạm AI">
                 <header>
-                    <button name="action_analyze_with_claude" string="Phân Tích Bằng AI" type="object" class="oe_highlight" invisible="status == 'completed'"/>
-                    <button name="action_retry_analysis" string="Phân Tích Lại" type="object" invisible="status != 'completed'"/>
-                    <field name="status" widget="statusbar"/>
+                    <button name="action_analyze_with_gemini" string="⚡ Phân Tích Bằng AI" type="object" class="btn-primary" invisible="status == 'completed'"/>
+                    <button name="action_retry_analysis" string="🔄 Phân Tích Lại" type="object" invisible="status != 'completed'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,processing,completed"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <label for="name" string="Tiêu Đề Báo Cáo"/>
-                        <h1><field name="name"/></h1>
+                        <span class="o_form_label text-muted">Báo Cáo Sư Phạm Trí Tuệ Nhân Tạo</span>
+                        <h1><field name="name" readonly="1"/></h1>
                     </div>
+
+                    <!-- THẺ CHỈ SỐ KPI TỔNG QUAN -->
+                    <div class="row g-3 my-2">
+                        <div class="col-md-3">
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Điểm Số Bài Thi</div>
+                                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+                                    <span style="font-size: 24px; font-weight: 800; color: #15803d;" invisible="total_score &lt; 5.0"><field name="total_score"/></span>
+                                    <span style="font-size: 24px; font-weight: 800; color: #b91c1c;" invisible="total_score &gt;= 5.0"><field name="total_score"/></span>
+                                    <span style="color: #94a3b8; font-size: 13px; font-weight: 600;">/ 10.0 đ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Kết Quả Đánh Giá</div>
+                                <div style="margin-top: 8px;">
+                                    <field name="result_display" widget="badge" decoration-success="passed == True" decoration-danger="passed == False"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Số Câu Trả Lời Đúng</div>
+                                <div style="font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 6px;">
+                                    <field name="correct_ratio"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                                <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">Công Nghệ AI</div>
+                                <div style="margin-top: 8px;">
+                                    <field name="ai_model_display" widget="badge" decoration-info="True"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <group>
-                        <group string="Thông Tin Phiên Thi">
-                            <field name="student_id"/>
-                            <field name="session_id"/>
+                        <group string="Thông Tin Học Sinh &amp; Đợt Kiểm Tra">
+                            <field name="student_id" readonly="1"/>
+                            <field name="student_code" readonly="1"/>
+                            <field name="class_id" readonly="1"/>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="exam_id" readonly="1"/>
+                            <field name="session_id" readonly="1" string="Phiên Làm Bài"/>
                         </group>
-                        <group string="Thông Số Mô Hình">
-                            <field name="ai_model_version"/>
-                            <field name="analysis_date"/>
+                        <group string="Thông Số Mô Hình &amp; Thời Gian">
+                            <field name="ai_model_version" readonly="1"/>
+                            <field name="analysis_date" readonly="1"/>
+                            <field name="passed" invisible="1"/>
                         </group>
                     </group>
+
                     <notebook>
-                        <page string="Kết Quả Đánh Giá Năng Lực">
-                            <group string="Điểm Mạnh (Dạng toán học tốt)">
-                                <field name="strengths" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
-                            </group>
-                            <group string="Điểm Yếu (Cần lưu ý rèn luyện)">
-                                <field name="weaknesses" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
-                            </group>
+                        <page string="📊 Đánh Giá Năng Lực Toán Học">
+                            <div class="row g-3 py-2">
+                                <div class="col-md-6">
+                                    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 16px; height: 100%;">
+                                        <div style="color: #166534; font-weight: 700; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            <span>💪</span> Điểm Mạnh (Dạng toán nắm vững)
+                                        </div>
+                                        <field name="strengths" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 16px; height: 100%;">
+                                        <div style="color: #991b1b; font-weight: 700; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            <span>⚠️</span> Điểm Cần Lưu Ý (Dạng toán hay sai / nhầm lẫn)
+                                        </div>
+                                        <field name="weaknesses" nolabel="1" placeholder="Chưa có dữ liệu phân tích..."/>
+                                    </div>
+                                </div>
+                            </div>
                         </page>
-                        <page string="Nhận Xét Sư Phạm &amp; Hướng Dẫn">
-                            <group string="Lời Nhận Xét Của Giáo Viên AI">
-                                <field name="feedback" nolabel="1" placeholder="Chưa có nhận xét..."/>
-                            </group>
-                            <group string="Lộ Trình Cải Thiện &amp; Bài Tập Đề Xuất">
-                                <field name="suggestions" nolabel="1" placeholder="Chưa có gợi ý..."/>
-                            </group>
+                        <page string="🎓 Lời Khuyên Sư Phạm &amp; Kế Hoạch Rèn Luyện">
+                            <div class="row g-3 py-2">
+                                <div class="col-md-6">
+                                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; height: 100%;">
+                                        <div style="color: #1e40af; font-weight: 700; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            <span>📝</span> Nhận Xét Sư Phạm Chi Tiết Từ Giáo Viên AI
+                                        </div>
+                                        <field name="feedback" nolabel="1" placeholder="Chưa có nhận xét..."/>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div style="background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 10px; padding: 16px; height: 100%;">
+                                        <div style="color: #6b21a8; font-weight: 700; font-size: 14.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                            <span>🚀</span> Lộ Trình Cải Thiện &amp; Bài Tập Đề Xuất
+                                        </div>
+                                        <field name="suggestions" nolabel="1" placeholder="Chưa có gợi ý..."/>
+                                    </div>
+                                </div>
+                            </div>
                         </page>
-                        <page string="Nhật Ký Lỗi &amp; Kỹ Thuật" invisible="not error_message">
-                            <group>
-                                <field name="error_message" readonly="1"/>
-                            </group>
+                        <page string="Nhật Ký &amp; Thông Báo Hệ Thống" invisible="not error_message">
+                            <field name="error_message" readonly="1"/>
                         </page>
                     </notebook>
                 </sheet>
@@ -69,31 +144,53 @@
         </field>
     </record>
 
+    <!-- ==================== 3. TÌM KIẾM & BỘ LỌC PHÂN TÍCH AI ==================== -->
     <record id="view_ai_analysis_search" model="ir.ui.view">
         <field name="name">ai.analysis.search</field>
         <field name="model">ai.analysis</field>
         <field name="arch" type="xml">
             <search string="Tìm Kiếm Phân Tích AI">
-                <field name="name"/>
-                <field name="student_id"/>
-                <field name="session_id"/>
+                <field name="student_id" string="Học Sinh"/>
+                <field name="student_code" string="Mã HS"/>
+                <field name="class_id" string="Lớp Học"/>
+                <field name="batch_id" string="Đợt Kiểm Tra"/>
+                <field name="exam_id" string="Đề Thi"/>
+                <field name="name" string="Tiêu Đề"/>
+                
                 <filter string="Đã Hoàn Thành" name="filter_completed" domain="[('status', '=', 'completed')]"/>
-                <filter string="Chờ Xử Lý" name="filter_pending" domain="[('status', '=', 'pending')]"/>
+                <filter string="Chờ / Đang Phân Tích" name="filter_pending" domain="[('status', 'in', ('pending', 'processing'))]"/>
                 <filter string="Có Lỗi" name="filter_failed" domain="[('status', '=', 'failed')]"/>
+                <filter string="Học Sinh Đạt" name="filter_passed" domain="[('passed', '=', True)]"/>
+                <filter string="Học Sinh Chưa Đạt" name="filter_failed_exam" domain="[('passed', '=', False)]"/>
+                <separator/>
                 <group>
+                    <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
+                    <filter string="Đợt Kiểm Tra" name="group_batch" domain="[]" context="{'group_by': 'batch_id'}"/>
+                    <filter string="Đề Thi" name="group_exam" domain="[]" context="{'group_by': 'exam_id'}"/>
                     <filter string="Học Sinh" name="group_student" domain="[]" context="{'group_by': 'student_id'}"/>
-                    <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
-                    <filter string="Mô Hình AI" name="group_model" domain="[]" context="{'group_by': 'ai_model_version'}"/>
+                    <filter string="Kết Quả Đạt / Rớt" name="group_passed" domain="[]" context="{'group_by': 'passed'}"/>
+                    <filter string="Mô Hình AI" name="group_model" domain="[]" context="{'group_by': 'ai_model_display'}"/>
+                    <filter string="Trạng Thái AI" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
+                    <filter string="Thời Gian Phân Tích" name="group_analysis_date" domain="[]" context="{'group_by': 'analysis_date:month'}"/>
                 </group>
             </search>
         </field>
     </record>
 
+    <!-- ==================== 4. ACTION MỞ KẾT QUẢ PHÂN TÍCH AI ==================== -->
     <record id="action_ai_analysis" model="ir.actions.act_window">
         <field name="name">Kết Quả Phân Tích AI</field>
         <field name="res_model">ai.analysis</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_ai_analysis_list"/>
         <field name="search_view_id" ref="view_ai_analysis_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Chưa có báo cáo phân tích sư phạm AI nào!
+            </p>
+            <p>
+                Khi học sinh hoàn thành nộp bài thi, hệ thống sẽ tự động tổng hợp kết quả và phân tích chi tiết điểm mạnh, điểm yếu của từng học sinh.
+            </p>
+        </field>
     </record>
 </odoo>

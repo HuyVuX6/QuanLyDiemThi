@@ -19,7 +19,7 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'educational_system/static/src/js/exam_countdown_timer.js',
+            'educational_system/static/src/scss/custom_styles.scss',
         ],
     },
     'installable': True,
