@@ -48,6 +48,42 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Học Sinh Thuộc Khối">
+                            <field name="student_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="class_id"/>
+                                    <field name="gender"/>
+                                    <field name="exam_count" string="Số Bài Thi"/>
+                                    <field name="average_score" string="Điểm TB"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'Active'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Đề Thi Của Khối">
+                            <field name="exam_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="exam_type"/>
+                                    <field name="total_questions"/>
+                                    <field name="time_limit_minutes"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'active'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Ngân Hàng Câu Hỏi Của Khối">
+                            <field name="question_ids" readonly="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="content"/>
+                                    <field name="topic"/>
+                                    <field name="difficulty"/>
+                                    <field name="correct_answer" widget="badge" decoration-success="True"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
@@ -66,13 +102,14 @@
         <field name="model">school.class</field>
         <field name="arch" type="xml">
             <list string="Danh Sách Lớp Học">
-                <field name="code"/>
-                <field name="name"/>
-                <field name="grade_id"/>
-                <field name="teacher_id"/>
-                <field name="current_students"/>
-                <field name="max_students"/>
-                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-info="status == 'completed'" decoration-muted="status == 'inactive'"/>
+                <field name="code" string="Mã Lớp"/>
+                <field name="name" string="Tên Lớp"/>
+                <field name="grade_id" string="Khối"/>
+                <field name="teacher_id" string="GVCN"/>
+                <field name="current_students" string="Sĩ Số"/>
+                <field name="max_students" string="Tối Đa"/>
+                <field name="average_score" string="ĐiểmTB Lớp" decoration-success="average_score &gt;= 5.0" decoration-danger="average_score &gt; 0 and average_score &lt; 5.0"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'" decoration-warning="status == 'inactive'" decoration-danger="status == 'completed'"/>
             </list>
         </field>
     </record>
@@ -83,14 +120,24 @@
         <field name="arch" type="xml">
             <form string="Lớp Học">
                 <header>
-                    <button name="action_open_add_students_wizard" 
-                            string="➕ Thêm Học Sinh Vào Lớp" 
+                    <button name="action_create_exam_batch" 
+                            string="➕ Tạo Đợt Kiểm Tra Mới" 
                             type="object" 
-                            class="btn-primary" 
+                            class="btn-success" 
                             invisible="status == 'completed'"/>
-                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                    <button name="action_print_blank_omr_sheet" 
+                            string="📥 Tải Phiếu Trả Lời Trống (PDF)" 
+                            type="object" 
+                            class="btn-outline-secondary" 
+                            icon="fa-download"/>
+                    <field name="status" widget="statusbar" statusbar_visible="active,inactive,completed" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_class_batches" type="object" class="oe_stat_button" icon="fa-tasks">
+                            <field name="batch_count" widget="statinfo" string="Đợt Kiểm Tra"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <label for="name" string="Tên Lớp"/>
                         <h1><field name="name" placeholder="Ví dụ: Lớp 3A1"/></h1>
@@ -101,74 +148,68 @@
                             <field name="grade_id"/>
                             <field name="teacher_id"/>
                         </group>
-                        <group string="Sĩ Số &amp; Thời Gian">
-                            <field name="max_students"/>
-                            <field name="current_students"/>
-                            <field name="start_date"/>
-                            <field name="end_date"/>
+                        <group string="Sĩ Số, ĐiểmTB &amp; Thời Gian">
+                            <field name="max_students" string="Sĩ Số Tối Đa"/>
+                            <field name="current_students" string="Sĩ Số Hiện Tại"/>
+                            <field name="average_score" string="ĐiểmTB Lớp" decoration-success="average_score &gt;= 5.0" decoration-danger="average_score &gt; 0 and average_score &lt; 5.0"/>
+                            <field name="total_exams_taken" string="Số Bài Đã Chấm"/>
+                            <field name="start_date" string="Bắt Đầu"/>
+                            <field name="end_date" string="Kết Thúc"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Danh Sách Học Sinh Trong Lớp">
                             <field name="student_ids" readonly="status == 'completed'">
-                                <list editable="bottom">
-                                    <field name="code"/>
-                                    <field name="name"/>
-                                    <field name="gender"/>
-                                    <field name="date_of_birth"/>
-                                    <field name="parent_phone"/>
-                                    <field name="status"/>
+                                <list create="0">
+                                    <field name="code" string="Mã HS"/>
+                                    <field name="name" string="Họ Và Tên"/>
+                                    <field name="grade_id" string="Khối Lớp"/>
+                                    <field name="gender" string="Giới Tính"/>
+                                    <field name="date_of_birth" string="Ngày Sinh"/>
+                                    <field name="exam_count" string="Số Bài Đã Thi"/>
+                                    <field name="average_score" string="Điểm TB Tích Lũy" decoration-success="average_score &gt;= 5.0" decoration-danger="average_score &gt; 0 and average_score &lt; 5.0"/>
+                                    <field name="parent_phone" string="SĐT Phụ Huynh"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-warning="status == 'Inactive'" decoration-danger="status == 'Graduated'"/>
                                     <button name="action_remove_from_class" 
                                             string="Gỡ khỏi lớp" 
                                             type="object" 
                                             icon="fa-chain-broken" 
                                             class="text-danger" 
-                                            title="Gỡ học sinh ra khỏi lớp (vẫn giữ hồ sơ học sinh)"/>
+                                            title="Gỡ học sinh ra khỏi lớp (vẫn giữ hồ sơ &amp; lịch sử điểm số của học sinh)"/>
                                 </list>
                             </field>
+                            <div class="mt-2 mb-2 d-flex gap-2">
+                                <button name="action_open_add_students_wizard" 
+                                        string="➕ Thêm Học Sinh Vào Lớp" 
+                                        type="object" 
+                                        class="btn btn-primary" 
+                                        icon="fa-user-plus" 
+                                        invisible="status == 'completed'"/>
+                            </div>
                         </page>
 
-                        <!-- TAB 2: CÁC ĐỢT KIỂM TRA CỦA LỚP HỌC (Đầu kỳ, Giữa kỳ, Cuối kỳ, Thi lại...) -->
+                        <!-- TAB 2: CÁC ĐỢT KIỂM TRA CỦA LỚP HỌC -->
                         <page string="Các Đợt Kiểm Tra">
                             <field name="batch_ids" readonly="status == 'completed'">
                                 <list>
-                                    <field name="code"/>
-                                    <field name="name"/>
-                                    <field name="batch_type" widget="badge"/>
-                                    <field name="exam_id"/>
+                                    <field name="code" string="Mã Đợt"/>
+                                    <field name="name" string="Tên Đợt"/>
+                                    <field name="batch_type" widget="badge" string="Loại Đợt"/>
+                                    <field name="exam_id" string="Đề Thi"/>
                                     <field name="start_datetime" string="Bắt Đầu"/>
                                     <field name="end_datetime" string="Kết Thúc"/>
-                                    <field name="is_expired" invisible="1"/>
-                                    <field name="delivery_mode" widget="badge" decoration-info="delivery_mode == 'offline'"/>
-                                    <field name="total_students" string="Sĩ Số Thi"/>
+                                    <field name="total_students" string="Sĩ Số"/>
                                     <field name="passed_count" string="Số Đạt" decoration-success="passed_count &gt; 0"/>
                                     <field name="failed_count" string="Số Rớt" decoration-danger="failed_count &gt; 0"/>
-                                    <field name="pass_rate" widget="progressbar"/>
-                                    <field name="average_score" string="Điểm TB"/>
+                                    <field name="pass_rate" widget="progressbar" string="Tỷ Lệ Đạt"/>
+                                    <field name="average_score" string="ĐiểmTB"/>
                                     <field name="status" widget="badge" 
-                                           decoration-info="status == 'draft'" 
-                                           decoration-warning="status == 'in_progress'" 
-                                           decoration-success="status == 'completed'" 
-                                           decoration-danger="status == 'locked'"/>
-                                </list>
-                            </field>
-                        </page>
-
-                        <!-- TAB 3: KẾT QUẢ KIỂM TRA CHI TIẾT CỦA HỌC SINH -->
-                        <page string="Kết Quả Kiểm Tra">
-                            <field name="session_ids" readonly="1">
-                                <list>
-                                    <field name="student_code" string="Mã Sinh Viên / Mã HS"/>
-                                    <field name="student_name" string="Họ Và Tên Học Sinh"/>
-                                    <field name="batch_id" string="Đợt Kiểm Tra"/>
-                                    <field name="exam_id" string="Đề Thi"/>
-                                    <field name="total_score" string="Điểm Đạt Được" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0"/>
-                                    <field name="correct_count" string="Số Câu Đúng"/>
-                                    <field name="wrong_count" string="Số Câu Sai"/>
-                                    <field name="percentage" widget="progressbar" string="Tỷ Lệ (%)"/>
-                                    <field name="result_display" string="Kết Quả" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
-                                    <field name="status" widget="badge" decoration-muted="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
-                                    <button name="action_view_session_detail" string="Xem Chi Tiết" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Bấm vào để xem output chi tiết bài làm của học sinh này"/>
+                                           decoration-warning="status == 'draft'" 
+                                           decoration-success="status == 'in_progress'" 
+                                           decoration-danger="status == 'completed'"/>
+                                    <button name="action_print_exam_paper" string="In Đề Thi" type="object" icon="fa-print" class="btn-sm btn-outline-info" title="In đề thi trắc nghiệm A4 phát cho học sinh"/>
+                                    <button name="action_open_batch_scan_wizard" string="Chấm File .RAR" type="object" icon="fa-file-archive-o" class="btn-sm btn-outline-primary" title="Tải file .RAR chứa ảnh phiếu trả lời trắc nghiệm để chấm hàng loạt" invisible="status != 'in_progress'"/>
+                                    <button name="action_delete_batch" string="Xóa" type="object" icon="fa-trash" class="text-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này"/>
                                 </list>
                             </field>
                         </page>
@@ -215,7 +256,7 @@
                 <field name="specialization"/>
                 <field name="phone"/>
                 <field name="email"/>
-                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-muted="status == 'Inactive'"/>
+                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-warning="status == 'Inactive'" decoration-danger="status == 'Retired'"/>
             </list>
         </field>
     </record>
@@ -226,7 +267,7 @@
         <field name="arch" type="xml">
             <form string="Hồ Sơ Giáo Viên">
                 <header>
-                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                    <field name="status" widget="statusbar" statusbar_visible="Active,Inactive,Retired" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -291,11 +332,16 @@
             <list string="Danh Sách Học Sinh">
                 <field name="code"/>
                 <field name="name"/>
-                <field name="class_id"/>
+                <field name="grade_id" string="Khối Lớp"/>
+                <field name="class_id" string="Lớp Hiện Tại"/>
                 <field name="gender"/>
                 <field name="date_of_birth"/>
+                <field name="exam_count" string="Số Bài Đã Chấm"/>
+                <field name="passed_count" string="Số Bài Đạt" optional="show" decoration-success="passed_count &gt; 0"/>
+                <field name="failed_count" string="Chưa Đạt" optional="show" decoration-danger="failed_count &gt; 0"/>
+                <field name="average_score" string="Điểm TB Tích Lũy" decoration-success="average_score &gt;= 5.0" decoration-danger="average_score &gt; 0 and average_score &lt; 5.0"/>
                 <field name="parent_phone"/>
-                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-warning="status == 'Inactive'"/>
+                <field name="status" widget="badge" decoration-success="status == 'Active'" decoration-warning="status == 'Inactive'" decoration-danger="status == 'Graduated'"/>
             </list>
         </field>
     </record>
@@ -304,24 +350,24 @@
         <field name="name">school.student.form</field>
         <field name="model">school.student</field>
         <field name="arch" type="xml">
-            <form string="Hồ Sơ Học Sinh">
+            <form string="Hồ Sơ &amp; Kết Quả Học Tập Của Học Sinh">
                 <header>
-                    <field name="status" widget="statusbar" options="{'clickable': '1'}"/>
+                    <field name="status" widget="statusbar" statusbar_visible="Active,Inactive,Graduated" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <div class="alert alert-info py-2 my-2" role="status">
                         <i class="fa fa-info-circle me-1" title="Thông báo"/> 
-                        <strong>Quy tắc phân lớp:</strong> Học sinh chỉ được thêm vào lớp ở phần <strong>LỚP HỌC</strong> (tương tự như phân công Giáo viên).
+                        <strong>Hồ sơ điểm số độc lập theo Học Sinh:</strong> Có thể gán trực tiếp <strong>Khối Lớp</strong> cho học sinh. Khi học sinh chuyển sang lớp học khác, toàn bộ lịch sử bài kiểm tra và điểm số tích lũy bên dưới vẫn đi theo hồ sơ của học sinh này.
                     </div>
                     <div class="oe_title">
                         <label for="name" string="Họ Và Tên Học Sinh"/>
                         <h1><field name="name" placeholder="Ví dụ: Trần Minh Đức"/></h1>
                     </div>
                     <group>
-                        <group string="Thông Tin Học Tập">
+                        <group string="Thông Tin Học Tập &amp; Phân Khối">
                             <field name="code" placeholder="HS001"/>
-                            <field name="class_id" readonly="1"/>
-                            <field name="user_id"/>
+                            <field name="grade_id" placeholder="Chọn Khối Lớp (VD: Khối Lớp 3)..."/>
+                            <field name="class_id" readonly="1" string="Lớp Hiện Tại"/>
                         </group>
                         <group string="Thông Tin Cá Nhân &amp; Gia Đình">
                             <field name="date_of_birth"/>
@@ -330,6 +376,50 @@
                             <field name="email"/>
                         </group>
                     </group>
+
+                    <group string="Tổng Hợp Kết Quả Kiểm Tra Tích Lũy Của Học Sinh">
+                        <group>
+                            <field name="exam_count" string="Tổng Số Bài Đã Chấm"/>
+                            <field name="average_score" string="Điểm Trung Bình Tích Lũy" decoration-success="average_score &gt;= 5.0" decoration-danger="average_score &gt; 0 and average_score &lt; 5.0"/>
+                        </group>
+                        <group>
+                            <field name="passed_count" string="Số Bài Đạt (&gt;= 5.0)" decoration-success="passed_count &gt; 0"/>
+                            <field name="failed_count" string="Số Bài Chưa Đạt (&lt; 5.0)" decoration-danger="failed_count &gt; 0"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="📊 Kết Quả Kiểm Tra &amp; Bảng Điểm Cá Nhân">
+                            <field name="session_ids" readonly="1">
+                                <list string="Lịch Sử Bài Kiểm Tra Của Học Sinh" default_order="end_time desc, id desc" create="0" delete="0">
+                                    <field name="sbd" string="SBD (6 Số)" class="fw-bold font-monospace text-primary"/>
+                                    <field name="batch_id" string="Đợt Kiểm Tra"/>
+                                    <field name="class_id" string="Lớp Lúc Thi"/>
+                                    <field name="exam_id" string="Đề Thi"/>
+                                    <field name="exam_code" string="Mã Đề"/>
+                                    <field name="total_score" string="Điểm Số" decoration-success="total_score &gt;= 5.0" decoration-danger="total_score &lt; 5.0 and status == 'Graded'"/>
+                                    <field name="correct_ratio" string="Số Câu Đúng"/>
+                                    <field name="result_display" string="Đánh Giá" widget="badge" decoration-success="passed == True" decoration-danger="passed == False and status == 'Graded'" decoration-muted="status != 'Graded'"/>
+                                    <field name="end_time" string="Thời Gian Chấm"/>
+                                    <field name="status" string="Trạng Thái" widget="badge" decoration-info="status == 'NotStarted'" decoration-success="status == 'Graded'"/>
+                                    <button name="action_view_session_detail" string="Chi Tiết Bài Làm" type="object" icon="fa-eye" class="btn-sm btn-outline-primary" title="Xem chi tiết từng câu trả lời và ảnh phiếu OMR đã quét"/>
+                                    <button name="action_delete_session" string="Xóa" type="object" icon="fa-trash" class="text-danger" confirm=" Bạn có chắc chắn muốn xóa bài kiểm tra này?" title="Xóa bài kiểm tra này của học sinh"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="🤖 Nhận Xét &amp; Phân Tích AI">
+                            <field name="analysis_ids" readonly="1">
+                                <list string="Lịch Sử Phân Tích AI Của Học Sinh" create="0" delete="0">
+                                    <field name="analysis_date" string="Ngày Phân Tích"/>
+                                    <field name="session_id" string="Bài Thi"/>
+                                    <field name="strengths" string="Điểm Mạnh"/>
+                                    <field name="weaknesses" string="Điểm Cần Cải Thiện"/>
+                                    <field name="feedback" string="Nhận Xét Chung"/>
+                                    <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status == 'pending'" decoration-danger="status == 'failed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -340,12 +430,15 @@
         <field name="model">school.student</field>
         <field name="arch" type="xml">
             <search string="Tìm Kiếm Học Sinh">
-                <field name="name"/>
-                <field name="code"/>
-                <field name="class_id"/>
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]" string="Học Sinh (MSSV hoặc Tên)"/>
+                <field name="code" string="Mã Số Học Sinh / MSSV"/>
+                <field name="grade_id" string="Khối Lớp"/>
+                <field name="class_id" string="Lớp Hiện Tại"/>
                 <field name="parent_phone"/>
                 <filter string="Đang Học" name="filter_active" domain="[('status', '=', 'Active')]"/>
+                <filter string="Chưa Có Lớp" name="filter_unassigned" domain="[('class_id', '=', False)]"/>
                 <group>
+                    <filter string="Khối Lớp" name="group_grade" domain="[]" context="{'group_by': 'grade_id'}"/>
                     <filter string="Lớp Học" name="group_class" domain="[]" context="{'group_by': 'class_id'}"/>
                     <filter string="Giới Tính" name="group_gender" domain="[]" context="{'group_by': 'gender'}"/>
                     <filter string="Trạng Thái" name="group_status" domain="[]" context="{'group_by': 'status'}"/>
@@ -370,44 +463,45 @@
                 <sheet>
                     <div class="alert alert-info py-2" role="status">
                         <i class="fa fa-info-circle me-1" title="Thông báo"/>
-                        Chọn các học sinh để thêm vào lớp. Sĩ số lớp sẽ tự động được cập nhật sau khi hoàn tất.
+                        Nhập MSSV, Họ tên để tìm kiếm nhanh học sinh. Tích chọn học sinh cần thêm vào lớp và nhấn <strong>Xác Nhận Thêm Vào Lớp</strong>.
                     </div>
                     <group>
-                        <field name="class_id" readonly="1"/>
-                        <field name="filter_type" widget="radio" options="{'horizontal': true}"/>
-                        <field name="filter_info" readonly="1" nolabel="1" class="text-primary fw-bold"/>
+                        <group>
+                            <field name="class_id" readonly="1" force_save="1"/>
+                            <field name="grade_id" readonly="1" force_save="1"/>
+                            <field name="filter_type" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group>
+                            <field name="search_keyword" placeholder="Nhập MSSV (ví dụ: HS001), Họ tên, hoặc SĐT..."/>
+                            <field name="filter_info" readonly="1" nolabel="1" class="text-primary fw-bold"/>
+                        </group>
                     </group>
-                    <group string="Chọn Học Sinh">
-                        <field name="student_ids" 
-                               invisible="filter_type != 'unassigned'" 
-                               domain="[('class_id', '=', False), ('status', '=', 'Active')]" 
-                               nolabel="1">
-                            <list>
-                                <field name="code"/>
-                                <field name="name"/>
-                                <field name="gender"/>
-                                <field name="date_of_birth"/>
-                                <field name="class_id" string="Lớp Hiện Tại"/>
-                                <field name="status"/>
-                            </list>
-                        </field>
-                        <field name="student_ids" 
-                               invisible="filter_type != 'all'" 
-                               domain="[('class_id', '!=', class_id), ('status', '=', 'Active')]" 
-                               nolabel="1">
-                            <list>
-                                <field name="code"/>
-                                <field name="name"/>
-                                <field name="gender"/>
-                                <field name="date_of_birth"/>
-                                <field name="class_id" string="Lớp Hiện Tại"/>
-                                <field name="status"/>
-                            </list>
-                        </field>
-                    </group>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-muted">Danh Sách Học Sinh Có Thể Thêm:</span>
+                        <div class="d-flex gap-2">
+                            <button name="action_select_all" string="✓ Chọn Tất Cả" type="object" class="btn btn-sm btn-outline-primary"/>
+                            <button name="action_deselect_all" string="✗ Bỏ Chọn Tất Cả" type="object" class="btn btn-sm btn-outline-secondary"/>
+                        </div>
+                    </div>
+
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="student_id" column_invisible="True" force_save="1"/>
+                            <field name="selected" string="Chọn"/>
+                            <field name="code" string="MSSV / Mã Học Sinh"/>
+                            <field name="name" string="Họ Và Tên"/>
+                            <field name="grade_id" string="Khối Lớp"/>
+                            <field name="gender" string="Giới Tính"/>
+                            <field name="date_of_birth" string="Ngày Sinh"/>
+                            <field name="current_class_name" string="Lớp Hiện Tại"/>
+                            <field name="parent_phone" string="SĐT Phụ Huynh"/>
+                        </list>
+                    </field>
+                    <field name="selected_student_ids" invisible="1"/>
                 </sheet>
                 <footer>
-                    <button name="action_add_students" string="Xác Nhận Thêm Vào Lớp" type="object" class="btn-primary"/>
+                    <button name="action_add_students" string="➕ Xác Nhận Thêm Vào Lớp" type="object" class="btn-primary"/>
                     <button string="Hủy Bỏ" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

@@ -51,24 +51,14 @@
               sequence="1"
               groups="group_school_teacher,group_school_manager"/>
 
-    <menuitem id="menu_exam_batch" 
-              name="Đợt Kiểm Tra" 
+    <menuitem id="menu_exam_exam" 
+              name="Đề Thi" 
               parent="menu_exam_management" 
-              action="action_exam_batch" 
+              action="action_exam_exam" 
               sequence="2"
               groups="group_school_teacher,group_school_manager"/>
 
-    <menuitem id="menu_exam_exam" 
-              name="Đề Thi Toán 3" 
-              parent="menu_exam_management" 
-              action="action_exam_exam" 
-              sequence="3"/>
-
-    <menuitem id="menu_exam_session" 
-              name="Lượt Làm Bài" 
-              parent="menu_exam_management" 
-              action="action_exam_session" 
-              sequence="4"/>
+    <!-- Đã gỡ bỏ mục "Lượt Làm Bài" theo yêu cầu thiết kế kiến trúc mới -->
 
     <!-- 3. PHÂN HỆ TRÍ TUỆ NHÂN TẠO AI -->
     <menuitem id="menu_ai_management" 

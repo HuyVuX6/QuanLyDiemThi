@@ -1,0 +1,218 @@
+/* ==========================================================================
+   EDUCATIONAL SYSTEM - DESIGN SYSTEM & COLOR PALETTE
+   Lấy cảm hứng từ giao diện "Kết Quả Kiểm Tra":
+   - Màu pastel dịu mắt, độ tương phản cao (WCAG AAA), dễ nhận diện thị giác
+   - Nhãn badge bo tròn hình viên thuốc (pill), viền sắc nét
+   - Thanh trạng thái quy trình (Statusbar) đồng bộ logic nghiệp vụ
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. THANH TRẠNG THÁI QUY TRÌNH (STATUSBAR ARROW BUTTONS)
+   -------------------------------------------------------------------------- */
+
+/* 🟢 NHÓM 1: XANH LÁ (Thành Công / Đang Hoạt Động / Đang Diễn Ra / Hoàn Thành / Đã Chấm) */
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="active"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Active"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="in_progress"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="completed"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Graded"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Graduated"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="done"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="success"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="pass"] {
+    --o-statusbar-background-active: #dcfce7 !important;
+    --o-statusbar-border-active: #22c55e !important;
+    background-color: #dcfce7 !important;
+    border-color: #22c55e !important;
+    color: #15803d !important;
+    font-weight: 700 !important;
+}
+
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="active"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Active"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="in_progress"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="completed"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Graded"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Graduated"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="done"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="success"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="pass"]::before {
+    background-color: #22c55e !important;
+}
+
+/* 🟡 NHÓM 2: VÀNG HỔ PHÁCH (Dự Thảo / Tạo Đề / Chờ Xử Lý / Tạm Dừng) */
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="draft"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="pending"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="NotStarted"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="inactive"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Inactive"] {
+    --o-statusbar-background-active: #fef3c7 !important;
+    --o-statusbar-border-active: #f59e0b !important;
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+    color: #92400e !important;
+    font-weight: 700 !important;
+}
+
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="draft"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="pending"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="NotStarted"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="inactive"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Inactive"]::before {
+    background-color: #f59e0b !important;
+}
+
+/* 🟣 NHÓM 3: TÍM AI (Đang Phân Tích / Xử Lý Bằng Trí Tuệ Nhân Tạo) */
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="processing"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="analyzing"] {
+    --o-statusbar-background-active: #f3e8ff !important;
+    --o-statusbar-border-active: #a855f7 !important;
+    background-color: #f3e8ff !important;
+    border-color: #a855f7 !important;
+    color: #6b21a8 !important;
+    font-weight: 700 !important;
+}
+
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="processing"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="analyzing"]::before {
+    background-color: #a855f7 !important;
+}
+
+/* 🔴 NHÓM 4: ĐỎ (Lỗi / Thất Bại / Đã Đóng / Nghỉ Học / Đình Chỉ) */
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="failed"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="fail"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="closed"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="cancelled"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Suspended"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="DropOut"],
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Retired"] {
+    --o-statusbar-background-active: #fee2e2 !important;
+    --o-statusbar-border-active: #ef4444 !important;
+    background-color: #fee2e2 !important;
+    border-color: #ef4444 !important;
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+}
+
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="failed"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="fail"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="closed"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="cancelled"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Suspended"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="DropOut"]::before,
+.o_statusbar_status .o_arrow_button.o_arrow_button_current[data-value="Retired"]::before {
+    background-color: #ef4444 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. NHÃN BADGE & TAGS (ĐỒNG BỘ THEO PHẦN KẾT QUẢ KIỂM TRA)
+   -------------------------------------------------------------------------- */
+
+.badge,
+.o_tag.badge,
+.o_field_badge .badge {
+    border-radius: 20px !important;
+    font-weight: 700 !important;
+    padding: 4px 10px !important;
+    font-size: 11.5px !important;
+    letter-spacing: 0.2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    white-space: nowrap !important;
+}
+
+/* 🟢 BADGE XANH LÁ (ĐẠT, Hoàn Thành, Đang Hoạt Động) */
+.badge.text-bg-success,
+.o_tag.text-bg-success,
+span.badge[class*="text-bg-success"] {
+    background-color: #dcfce7 !important;
+    border: 1px solid #86efac !important;
+    color: #15803d !important;
+}
+
+/* 🔴 BADGE ĐỎ (CHƯA ĐẠT, Lỗi, Thất Bại, Đình Chỉ) */
+.badge.text-bg-danger,
+.o_tag.text-bg-danger,
+span.badge[class*="text-bg-danger"] {
+    background-color: #fee2e2 !important;
+    border: 1px solid #fca5a5 !important;
+    color: #b91c1c !important;
+}
+
+/* 🟡 BADGE VÀNG HỔ PHÁCH (Chờ Xử Lý, Dự Thảo, Đang Phân Tích) */
+.badge.text-bg-warning,
+.o_tag.text-bg-warning,
+span.badge[class*="text-bg-warning"] {
+    background-color: #fef3c7 !important;
+    border: 1px solid #fcd34d !important;
+    color: #92400e !important;
+}
+
+/* 🔵 BADGE XANH DƯƠNG (Thông Tin, Đợt Thi, Lớp Học) */
+.badge.text-bg-info,
+.o_tag.text-bg-info,
+span.badge[class*="text-bg-info"] {
+    background-color: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+
+/* 🟣 BADGE TÍM (Mô Hình AI, Công Nghệ AI) */
+.badge.text-bg-primary,
+.o_tag.text-bg-primary,
+span.badge[class*="text-bg-primary"] {
+    background-color: #faf5ff !important;
+    border: 1px solid #d8b4fe !important;
+    color: #6b21a8 !important;
+}
+
+/* ⚪ BADGE XÁM / TRUNG TÍNH (Chưa Làm, Chưa Bắt Đầu) */
+.badge.text-bg-secondary,
+.badge.text-bg-light,
+.o_tag.text-bg-secondary,
+.o_tag.text-bg-light,
+span.badge[class*="text-bg-secondary"],
+span.badge[class*="text-bg-light"] {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. MÀU CHỮ & ĐIỂM SỐ TRONG BẢNG (LIST VIEW STYLING)
+   -------------------------------------------------------------------------- */
+
+/* Điểm đạt (>= 5.0): Xanh lá đậm rõ ràng */
+.text-success,
+td.text-success {
+    color: #15803d !important;
+    font-weight: 700 !important;
+}
+
+/* Điểm trượt (< 5.0): Đỏ tươi rõ ràng */
+.text-danger,
+td.text-danger {
+    color: #b91c1c !important;
+    font-weight: 700 !important;
+}
+
+/* Tiêu đề cột bảng không bị ngắt dòng luộm thuộm */
+.o_list_table th {
+    white-space: nowrap !important;
+}
+
+/* Hiệu ứng di chuột trong bảng danh sách */
+.o_list_table tbody tr:hover {
+    background-color: #f8fafc !important;
+    transition: background-color 0.15s ease;
+}
+
+/* Mã số học sinh / mã đề hiển thị font monospace gọn gàng */
+.o_data_cell[name="student_code"],
+.o_data_cell[name="exam_code"],
+.o_data_cell[name="code"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+}
